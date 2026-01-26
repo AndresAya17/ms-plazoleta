@@ -1,4 +1,4 @@
-package com.pragma.plazoleta.application.handler.impl;
+package com.pragma.plazoleta.application.handler;
 
 import com.pragma.plazoleta.application.dto.request.RestaurantRequestDto;
 import com.pragma.plazoleta.application.handler.IRestaurantHandler;
