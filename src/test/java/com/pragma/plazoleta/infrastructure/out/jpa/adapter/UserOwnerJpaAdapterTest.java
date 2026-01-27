@@ -1,7 +1,6 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
 import com.pragma.plazoleta.application.dto.response.IsOwnerResponseDto;
-import com.pragma.plazoleta.domain.spi.IUserOwnerValidationPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,18 +14,18 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UserOwnerRestAdapterTest {
+public class UserOwnerJpaAdapterTest {
     @Mock
     private RestTemplate restTemplate;
 
     @InjectMocks
-    private UserOwnerRestAdapter userOwnerRestAdapter;
+    private UserOwnerJpaAdapter userOwnerJpaAdapter;
 
     @BeforeEach
     void setUp() {
         // Simula @Value("${users.service.url}")
         ReflectionTestUtils.setField(
-                userOwnerRestAdapter,
+                userOwnerJpaAdapter,
                 "usersServiceUrl",
                 "http://localhost:8081"
         );
@@ -44,7 +43,7 @@ public class UserOwnerRestAdapterTest {
                 .thenReturn(responseDto);
 
         // act
-        boolean result = userOwnerRestAdapter.isOwner(userId);
+        boolean result = userOwnerJpaAdapter.isOwner(userId);
 
         // assert
         assertTrue(result);
@@ -65,7 +64,7 @@ public class UserOwnerRestAdapterTest {
                 .thenReturn(responseDto);
 
         // act
-        boolean result = userOwnerRestAdapter.isOwner(userId);
+        boolean result = userOwnerJpaAdapter.isOwner(userId);
 
         // assert
         assertFalse(result);

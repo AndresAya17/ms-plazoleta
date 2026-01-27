@@ -2,14 +2,16 @@ package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
 import com.pragma.plazoleta.application.dto.response.IsOwnerResponseDto;
 import com.pragma.plazoleta.domain.spi.IUserOwnerValidationPort;
+import com.pragma.plazoleta.domain.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Component
 @RequiredArgsConstructor
-public class UserOwnerRestAdapter implements IUserOwnerValidationPort {
+public class UserOwnerJpaAdapter implements IUserOwnerValidationPort {
 
     private final RestTemplate restTemplate;
 
@@ -19,9 +21,14 @@ public class UserOwnerRestAdapter implements IUserOwnerValidationPort {
     @Override
     public boolean isOwner(Long userId) {
         String url = usersServiceUrl + "/api/v1/usuario/" + userId;
-        IsOwnerResponseDto response =
-                restTemplate.getForObject(url, IsOwnerResponseDto.class);
 
-        return response.getIsOwner();
+        try {
+            IsOwnerResponseDto response =
+                    restTemplate.getForObject(url, IsOwnerResponseDto.class);
+
+            return response.getIsOwner();
+        } catch (HttpClientErrorException.NotFound ex){
+            throw new UserNotFoundException(userId);
+        }
     }
 }

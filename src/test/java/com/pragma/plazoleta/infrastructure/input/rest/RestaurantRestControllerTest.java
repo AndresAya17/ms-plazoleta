@@ -1,8 +1,11 @@
 package com.pragma.plazoleta.infrastructure.input.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pragma.plazoleta.application.dto.request.DishRequestDto;
 import com.pragma.plazoleta.application.dto.request.RestaurantRequestDto;
+import com.pragma.plazoleta.application.handler.IDishHandler;
 import com.pragma.plazoleta.application.handler.IRestaurantHandler;
+import com.pragma.plazoleta.domain.model.DishCategory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -10,7 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -22,12 +25,16 @@ public class RestaurantRestControllerTest {
     @MockBean
     private IRestaurantHandler restaurantHandler;
 
+    @MockBean
+    private IDishHandler dishHandler;
+
     @Autowired
     private ObjectMapper objectMapper;
 
+    private static final String BASE_URL = "/api/v1/plazoleta";
+
     @Test
     void shouldReturn201WhenRestaurantIsCreated() throws Exception {
-        // arrange
         RestaurantRequestDto dto = new RestaurantRequestDto();
         dto.setName("Restaurante Test");
         dto.setNit("123456789");
@@ -36,28 +43,63 @@ public class RestaurantRestControllerTest {
         dto.setLogoUrl("https://logo.com/logo.png");
         dto.setOwnerId(1L);
 
-        doNothing().when(restaurantHandler).saveRestaurant(dto);
+        doNothing().when(restaurantHandler)
+                .saveRestaurant(any(RestaurantRequestDto.class));
 
         // act & assert
-        mockMvc.perform(
-                        post("/api/v1/plazoleta/")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(dto))
-                )
+        mockMvc.perform(post(BASE_URL + "/restaurant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated());
+
+        verify(restaurantHandler, times(1))
+                .saveRestaurant(any(RestaurantRequestDto.class));
     }
 
     @Test
     void shouldReturn400WhenRequestBodyIsInvalid() throws Exception {
-        // arrange: DTO inválido (campos vacíos)
-        RestaurantRequestDto dto = new RestaurantRequestDto();
+        RestaurantRequestDto dto = new RestaurantRequestDto(); // vacío
 
         // act & assert
-        mockMvc.perform(
-                        post("/api/v1/plazoleta/")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(dto))
-                )
+        mockMvc.perform(post(BASE_URL + "/restaurant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(restaurantHandler);
+    }
+    @Test
+    void shouldReturn201WhenDishIsCreated() throws Exception {
+        DishRequestDto dto = new DishRequestDto();
+        dto.setName("Pasta");
+        dto.setPrice(25000);
+        dto.setDescription("Pasta artesanal");
+        dto.setImageUrl("https://img.com/pasta.png");
+
+        dto.setCategory(DishCategory.MAIN_COURSE);
+        dto.setRestaurantId(1L);
+        dto.setOwnerId(10L);
+
+        doNothing().when(dishHandler)
+                .saveDish(any(DishRequestDto.class));
+
+        mockMvc.perform(post("/api/v1/plazoleta/dish")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated());
+
+        verify(dishHandler).saveDish(any(DishRequestDto.class));
+    }
+
+    @Test
+    void shouldReturn400WhenDishRequestIsInvalid() throws Exception {
+        DishRequestDto dto = new DishRequestDto();
+
+        mockMvc.perform(post(BASE_URL + "/dish")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(dishHandler);
     }
 }
