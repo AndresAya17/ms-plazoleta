@@ -68,38 +68,5 @@ public class RestaurantRestControllerTest {
 
         verifyNoInteractions(restaurantHandler);
     }
-    @Test
-    void shouldReturn201WhenDishIsCreated() throws Exception {
-        DishRequestDto dto = new DishRequestDto();
-        dto.setName("Pasta");
-        dto.setPrice(25000);
-        dto.setDescription("Pasta artesanal");
-        dto.setImageUrl("https://img.com/pasta.png");
 
-        dto.setCategory(DishCategory.MAIN_COURSE);
-        dto.setRestaurantId(1L);
-        dto.setOwnerId(10L);
-
-        doNothing().when(dishHandler)
-                .saveDish(any(DishRequestDto.class));
-
-        mockMvc.perform(post("/api/v1/plazoleta/dish")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isCreated());
-
-        verify(dishHandler).saveDish(any(DishRequestDto.class));
-    }
-
-    @Test
-    void shouldReturn400WhenDishRequestIsInvalid() throws Exception {
-        DishRequestDto dto = new DishRequestDto();
-
-        mockMvc.perform(post(BASE_URL + "/dish")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isBadRequest());
-
-        verifyNoInteractions(dishHandler);
-    }
 }

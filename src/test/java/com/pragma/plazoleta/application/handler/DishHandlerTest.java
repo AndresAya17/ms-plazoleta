@@ -1,8 +1,10 @@
 package com.pragma.plazoleta.application.handler;
 
 import com.pragma.plazoleta.application.dto.request.DishRequestDto;
+import com.pragma.plazoleta.application.dto.request.UpdateDishRequestDto;
 import com.pragma.plazoleta.application.handler.impl.DishHandler;
 import com.pragma.plazoleta.application.mapper.IDishRequestMapper;
+import com.pragma.plazoleta.domain.api.IDishServicePort;
 import com.pragma.plazoleta.domain.model.Dish;
 import com.pragma.plazoleta.domain.model.DishCategory;
 import com.pragma.plazoleta.domain.usecase.DishUseCase;
@@ -25,9 +27,10 @@ public class DishHandlerTest {
     @InjectMocks
     private DishHandler dishHandler;
 
+
     @Test
     void shouldSaveDishSuccessfully() {
-        // ---------- arrange ----------
+        // arrange
         DishRequestDto requestDto = new DishRequestDto();
         requestDto.setName("Pizza");
         requestDto.setPrice(25000);
@@ -50,12 +53,30 @@ public class DishHandlerTest {
 
         when(dishRequestMapper.toDish(requestDto)).thenReturn(dish);
 
-        // ---------- act ----------
+        // act
         dishHandler.saveDish(requestDto);
 
-        // ---------- assert ----------
-        verify(dishRequestMapper, times(1)).toDish(requestDto);
+        // assert
+        verify(dishRequestMapper).toDish(requestDto);
         verify(dishUseCase, times(1)).saveDish(dish);
-        verifyNoMoreInteractions(dishRequestMapper, dishUseCase);
+        verifyNoMoreInteractions(dishUseCase, dishRequestMapper);
+    }
+
+    @Test
+    void shouldUpdateDishSuccessfully() {
+        // arrange
+        UpdateDishRequestDto dto = new UpdateDishRequestDto();
+        dto.setDishId(1L);
+        dto.setPrice(30000);
+        dto.setDescription("Updated description");
+
+        // act
+        dishHandler.updateDish(dto);
+
+        // assert
+        verify(dishUseCase, times(1))
+                .updateDish(1L, 30000, "Updated description");
+
+        verifyNoMoreInteractions(dishUseCase);
     }
 }

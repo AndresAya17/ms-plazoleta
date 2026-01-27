@@ -1,5 +1,6 @@
 package com.pragma.plazoleta.infrastructure.exceptionhandler;
 
+import com.pragma.plazoleta.domain.exception.DishNotFoundException;
 import com.pragma.plazoleta.domain.exception.RestaurantOwnershipException;
 import com.pragma.plazoleta.domain.exception.UserNotFoundException;
 import com.pragma.plazoleta.domain.exception.UserNotOwnerException;
@@ -47,6 +48,11 @@ public class GlobalExceptionHandlerTest {
         void userNotFound() {
             throw new UserNotFoundException(99L);
         }
+
+        @GetMapping("/dish-not-found")
+        void dishNotFound() {
+            throw new DishNotFoundException(20L);
+        }
     }
 
     @Test
@@ -72,6 +78,14 @@ public class GlobalExceptionHandlerTest {
         mockMvc.perform(get("/user-not-found")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message")
+                        .value(containsString("not found")));
+    }
+    @Test
+    void shouldReturn200WhenDishNotFoundExceptionIsThrown() throws Exception {
+        mockMvc.perform(get("/dish-not-found")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message")
                         .value(containsString("not found")));
     }
