@@ -1,7 +1,7 @@
 package com.pragma.plazoleta.infrastructure.exceptionhandler;
 
 import com.pragma.plazoleta.domain.exception.DishNotFoundException;
-import com.pragma.plazoleta.domain.exception.UserNotOwnerException;
+import com.pragma.plazoleta.domain.exception.UserNotRolException;
 import com.pragma.plazoleta.domain.exception.RestaurantOwnershipException;
 import com.pragma.plazoleta.domain.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(UserNotOwnerException.class)
+    @ExceptionHandler(UserNotRolException.class)
     public ResponseEntity<ErrorResponse> handleUserNotOwner(
-            UserNotOwnerException ex
+            UserNotRolException ex
     ) {
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)

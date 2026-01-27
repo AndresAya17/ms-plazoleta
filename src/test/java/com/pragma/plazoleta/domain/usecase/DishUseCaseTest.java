@@ -2,16 +2,16 @@ package com.pragma.plazoleta.domain.usecase;
 
 import com.pragma.plazoleta.domain.exception.DishNotFoundException;
 import com.pragma.plazoleta.domain.exception.RestaurantOwnershipException;
-import com.pragma.plazoleta.domain.exception.UserNotOwnerException;
+import com.pragma.plazoleta.domain.exception.UserNotRolException;
 import com.pragma.plazoleta.domain.model.Dish;
 import com.pragma.plazoleta.domain.model.DishCategory;
 import com.pragma.plazoleta.domain.model.Restaurant;
+import com.pragma.plazoleta.domain.model.Rol;
 import com.pragma.plazoleta.domain.spi.IDishPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
-import com.pragma.plazoleta.domain.spi.IUserOwnerValidationPort;
+import com.pragma.plazoleta.domain.spi.IUserValidationPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 
 import java.util.Optional;
 
@@ -22,7 +22,7 @@ public class DishUseCaseTest {
 
     private IDishPersistencePort dishPersistencePort;
     private IRestaurantPersistencePort restaurantPersistencePort;
-    private IUserOwnerValidationPort userOwnerValidationPort;
+    private IUserValidationPort userValidationPort;
 
     private DishUseCase dishUseCase;
 
@@ -30,29 +30,28 @@ public class DishUseCaseTest {
     void setUp() {
         dishPersistencePort = mock(IDishPersistencePort.class);
         restaurantPersistencePort = mock(IRestaurantPersistencePort.class);
-        userOwnerValidationPort = mock(IUserOwnerValidationPort.class);
+        userValidationPort = mock(IUserValidationPort.class);
 
         dishUseCase = new DishUseCase(
                 dishPersistencePort,
                 restaurantPersistencePort,
-                userOwnerValidationPort
+                userValidationPort
         );
     }
 
     @Test
-    void shouldThrowUserNotOwnerExceptionWhenUserIsNotOwner() {
-        // arrange
+    void shouldThrowUserNotRolExceptionWhenUserIsNotProprietary() {
         Dish dish = buildDish(5L, 10L);
 
-        when(userOwnerValidationPort.isOwner(5L)).thenReturn(false);
+        when(userValidationPort.getUserRol(5L)).thenReturn(Rol.ADMINISTRADOR);
 
         // act & assert
         assertThrows(
-                UserNotOwnerException.class,
+                UserNotRolException.class,
                 () -> dishUseCase.saveDish(dish)
         );
 
-        verify(userOwnerValidationPort).isOwner(5L);
+        verify(userValidationPort).getUserRol(5L);
         verifyNoInteractions(restaurantPersistencePort, dishPersistencePort);
     }
 
@@ -63,9 +62,9 @@ public class DishUseCaseTest {
 
         Restaurant restaurant = new Restaurant();
         restaurant.setId(10L);
-        restaurant.setOwnerId(99L); // 👈 dueño distinto
+        restaurant.setOwnerId(99L); // dueño distinto
 
-        when(userOwnerValidationPort.isOwner(5L)).thenReturn(true);
+        when(userValidationPort.getUserRol(5L)).thenReturn(Rol.PROPIETARIO);
         when(restaurantPersistencePort.findById(10L)).thenReturn(restaurant);
 
         // act & assert
@@ -74,10 +73,11 @@ public class DishUseCaseTest {
                 () -> dishUseCase.saveDish(dish)
         );
 
-        verify(userOwnerValidationPort).isOwner(5L);
+        verify(userValidationPort).getUserRol(5L);
         verify(restaurantPersistencePort).findById(10L);
         verifyNoInteractions(dishPersistencePort);
     }
+
 
     @Test
     void shouldSaveDishSuccessfullyWhenValidOwnerAndRestaurant() {
@@ -86,19 +86,21 @@ public class DishUseCaseTest {
 
         Restaurant restaurant = new Restaurant();
         restaurant.setId(10L);
-        restaurant.setOwnerId(5L); // 👈 dueño correcto
+        restaurant.setOwnerId(5L); // dueño correcto
 
-        when(userOwnerValidationPort.isOwner(5L)).thenReturn(true);
+        when(userValidationPort.getUserRol(5L)).thenReturn(Rol.PROPIETARIO);
         when(restaurantPersistencePort.findById(10L)).thenReturn(restaurant);
 
         // act
         dishUseCase.saveDish(dish);
 
         // assert
-        verify(userOwnerValidationPort).isOwner(5L);
+        verify(userValidationPort).getUserRol(5L);
         verify(restaurantPersistencePort).findById(10L);
         verify(dishPersistencePort).saveDish(dish);
     }
+
+
 
     @Test
     void shouldUpdateDishSuccessfully() {

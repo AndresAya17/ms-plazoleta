@@ -3,7 +3,7 @@ package com.pragma.plazoleta.infrastructure.exceptionhandler;
 import com.pragma.plazoleta.domain.exception.DishNotFoundException;
 import com.pragma.plazoleta.domain.exception.RestaurantOwnershipException;
 import com.pragma.plazoleta.domain.exception.UserNotFoundException;
-import com.pragma.plazoleta.domain.exception.UserNotOwnerException;
+import com.pragma.plazoleta.domain.exception.UserNotRolException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +36,7 @@ public class GlobalExceptionHandlerTest {
 
         @GetMapping("/user-not-owner")
         void userNotOwner() {
-            throw new UserNotOwnerException(10L);
+            throw new UserNotRolException(10L);
         }
 
         @GetMapping("/restaurant-ownership")
@@ -61,7 +61,7 @@ public class GlobalExceptionHandlerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message")
-                        .value(containsString("no es propietario")));
+                        .value(containsString("no tiene el rol permitido")));
     }
 
     @Test

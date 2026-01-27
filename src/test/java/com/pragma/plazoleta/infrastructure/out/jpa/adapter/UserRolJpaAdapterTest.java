@@ -1,6 +1,8 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
 import com.pragma.plazoleta.application.dto.response.IsOwnerResponseDto;
+import com.pragma.plazoleta.application.dto.response.RolUserResponseDto;
+import com.pragma.plazoleta.domain.model.Rol;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,61 +16,63 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UserOwnerJpaAdapterTest {
+public class UserRolJpaAdapterTest {
     @Mock
     private RestTemplate restTemplate;
 
     @InjectMocks
-    private UserOwnerJpaAdapter userOwnerJpaAdapter;
+    private UserRolJpaAdapter userRolJpaAdapter;
 
     @BeforeEach
     void setUp() {
         // Simula @Value("${users.service.url}")
         ReflectionTestUtils.setField(
-                userOwnerJpaAdapter,
+                userRolJpaAdapter,
                 "usersServiceUrl",
                 "http://localhost:8081"
         );
     }
 
     @Test
-    void shouldReturnTrueWhenUserIsOwner() {
+    void shouldReturnRoleWhenUserIsProprietary() {
         // arrange
         Long userId = 1L;
-        String expectedUrl = "http://localhost:8081/api/v1/usuario/" + userId;
+        String expectedUrl = "http://localhost:8081/api/v1/usuario/" + userId + "/rol";
 
-        IsOwnerResponseDto responseDto = new IsOwnerResponseDto(true);
+        RolUserResponseDto responseDto =
+                new RolUserResponseDto("PROPIETARIO");
 
-        when(restTemplate.getForObject(expectedUrl, IsOwnerResponseDto.class))
+        when(restTemplate.getForObject(expectedUrl, RolUserResponseDto.class))
                 .thenReturn(responseDto);
 
         // act
-        boolean result = userOwnerJpaAdapter.isOwner(userId);
+        Rol result = userRolJpaAdapter.getUserRol(userId);
 
         // assert
-        assertTrue(result);
-        verify(restTemplate, times(1))
-                .getForObject(expectedUrl, IsOwnerResponseDto.class);
+        assertEquals(Rol.PROPIETARIO, result);
+        verify(restTemplate)
+                .getForObject(expectedUrl, RolUserResponseDto.class);
         verifyNoMoreInteractions(restTemplate);
     }
 
     @Test
-    void shouldReturnFalseWhenUserIsNotOwner() {
+    void shouldReturnAdministratorRole() {
         // arrange
         Long userId = 2L;
-        String expectedUrl = "http://localhost:8081/api/v1/usuario/" + userId;
+        String expectedUrl = "http://localhost:8081/api/v1/usuario/" + userId + "/rol";
 
-        IsOwnerResponseDto responseDto = new IsOwnerResponseDto(false);
+        RolUserResponseDto responseDto =
+                new RolUserResponseDto("ADMINISTRADOR");
 
-        when(restTemplate.getForObject(expectedUrl, IsOwnerResponseDto.class))
+        when(restTemplate.getForObject(expectedUrl, RolUserResponseDto.class))
                 .thenReturn(responseDto);
 
         // act
-        boolean result = userOwnerJpaAdapter.isOwner(userId);
+        Rol result = userRolJpaAdapter.getUserRol(userId);
 
         // assert
-        assertFalse(result);
+        assertEquals(Rol.ADMINISTRADOR, result);
         verify(restTemplate)
-                .getForObject(expectedUrl, IsOwnerResponseDto.class);
+                .getForObject(expectedUrl, RolUserResponseDto.class);
     }
 }

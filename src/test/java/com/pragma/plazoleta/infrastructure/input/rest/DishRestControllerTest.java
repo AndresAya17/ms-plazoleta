@@ -21,6 +21,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(DishRestController.class)
 public class DishRestControllerTest {
+
+    private static final String DISH_URL = "/api/v1/plazoleta/dish/";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -42,15 +45,13 @@ public class DishRestControllerTest {
         dto.setPrice(25000);
         dto.setDescription("Pasta artesanal");
         dto.setImageUrl("https://img.com/pasta.png");
-
         dto.setCategory(DishCategory.MAIN_COURSE);
         dto.setRestaurantId(1L);
         dto.setOwnerId(10L);
 
-        doNothing().when(dishHandler)
-                .saveDish(any(DishRequestDto.class));
+        doNothing().when(dishHandler).saveDish(any(DishRequestDto.class));
 
-        mockMvc.perform(post("/api/v1/plazoleta/dish")
+        mockMvc.perform(post(DISH_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated());
@@ -60,9 +61,9 @@ public class DishRestControllerTest {
 
     @Test
     void shouldReturn400WhenDishRequestIsInvalid() throws Exception {
-        DishRequestDto dto = new DishRequestDto();
+        DishRequestDto dto = new DishRequestDto(); // vacío → inválido
 
-        mockMvc.perform(post(BASE_URL + "/dish")
+        mockMvc.perform(post(DISH_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest());
@@ -72,24 +73,19 @@ public class DishRestControllerTest {
 
     @Test
     void shouldReturn200WhenDishIsUpdatedSuccessfully() throws Exception {
-        // arrange
         UpdateDishRequestDto dto = new UpdateDishRequestDto();
         dto.setDishId(1L);
         dto.setPrice(30000);
         dto.setDescription("Updated description");
 
-        doNothing()
-                .when(dishHandler)
-                .updateDish(any(UpdateDishRequestDto.class));
+        doNothing().when(dishHandler).updateDish(any(UpdateDishRequestDto.class));
 
-        // act & assert
-        mockMvc.perform(patch("/api/v1/plazoleta/dish")
+        mockMvc.perform(patch(DISH_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk());
 
-        verify(dishHandler, times(1))
-                .updateDish(any(UpdateDishRequestDto.class));
+        verify(dishHandler).updateDish(any(UpdateDishRequestDto.class));
     }
 
 

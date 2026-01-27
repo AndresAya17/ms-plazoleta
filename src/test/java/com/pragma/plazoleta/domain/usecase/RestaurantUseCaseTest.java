@@ -1,9 +1,11 @@
 package com.pragma.plazoleta.domain.usecase;
 
 
+import com.pragma.plazoleta.domain.exception.UserNotRolException;
 import com.pragma.plazoleta.domain.model.Restaurant;
+import com.pragma.plazoleta.domain.model.Rol;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
-import com.pragma.plazoleta.domain.spi.IUserOwnerValidationPort;
+import com.pragma.plazoleta.domain.spi.IUserValidationPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,45 +22,45 @@ public class RestaurantUseCaseTest {
     private IRestaurantPersistencePort restaurantPersistencePort;
 
     @Mock
-    private IUserOwnerValidationPort userOwnerValidationPort;
+    private IUserValidationPort userOwnerValidationPort;
 
     @InjectMocks
     private RestaurantUseCase restaurantUseCase;
 
     @Test
-    void shouldSaveRestaurantWhenUserIsOwner() {
+    void shouldSaveRestaurantWhenUserIsAdministrator() {
         // arrange
         Restaurant restaurant = new Restaurant();
         restaurant.setOwnerId(1L);
 
-        when(userOwnerValidationPort.isOwner(1L)).thenReturn(true);
+        when(userOwnerValidationPort.getUserRol(1L))
+                .thenReturn(Rol.ADMINISTRADOR);
 
         // act
         restaurantUseCase.saveRestaurant(restaurant);
 
         // assert
-        verify(userOwnerValidationPort, times(1)).isOwner(1L);
-        verify(restaurantPersistencePort, times(1)).saveRestaurant(restaurant);
+        verify(userOwnerValidationPort).getUserRol(1L);
+        verify(restaurantPersistencePort).saveRestaurant(restaurant);
         verifyNoMoreInteractions(userOwnerValidationPort, restaurantPersistencePort);
     }
 
     @Test
-    void shouldThrowExceptionWhenUserIsNotOwner() {
+    void shouldThrowUserNotRolExceptionWhenUserIsNotAdministrator() {
         // arrange
         Restaurant restaurant = new Restaurant();
         restaurant.setOwnerId(2L);
 
-        when(userOwnerValidationPort.isOwner(2L)).thenReturn(false);
+        when(userOwnerValidationPort.getUserRol(2L))
+                .thenReturn(Rol.PROPIETARIO);
 
         // act & assert
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
+        assertThrows(
+                UserNotRolException.class,
                 () -> restaurantUseCase.saveRestaurant(restaurant)
         );
 
-        assertEquals("El usuario no es propietario", exception.getMessage());
-
-        verify(userOwnerValidationPort, times(1)).isOwner(2L);
+        verify(userOwnerValidationPort).getUserRol(2L);
         verifyNoInteractions(restaurantPersistencePort);
     }
 }
