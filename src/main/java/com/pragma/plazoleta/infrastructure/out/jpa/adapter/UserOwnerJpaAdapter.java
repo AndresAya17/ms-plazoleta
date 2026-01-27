@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Component
 @RequiredArgsConstructor
-public class UserOwnerRestAdapter implements IUserOwnerValidationPort {
+public class UserOwnerJpaAdapter implements IUserOwnerValidationPort {
 
     private final RestTemplate restTemplate;
 

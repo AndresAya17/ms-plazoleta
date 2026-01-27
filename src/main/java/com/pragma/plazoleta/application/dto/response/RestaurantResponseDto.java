@@ -10,7 +10,7 @@ public class RestaurantResponseDto {
     private String name;
     private String nit;
     private String address;
-    private String PhoneNumber;
+    private String phoneNumber;
     private String logoUrl;
     private Long ownerId;
 }
