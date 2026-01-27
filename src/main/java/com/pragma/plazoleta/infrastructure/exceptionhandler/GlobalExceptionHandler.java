@@ -1,5 +1,6 @@
 package com.pragma.plazoleta.infrastructure.exceptionhandler;
 
+import com.pragma.plazoleta.domain.exception.DishNotFoundException;
 import com.pragma.plazoleta.domain.exception.UserNotOwnerException;
 import com.pragma.plazoleta.domain.exception.RestaurantOwnershipException;
 import com.pragma.plazoleta.domain.exception.UserNotFoundException;
@@ -34,6 +35,15 @@ public class GlobalExceptionHandler {
     ) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(DishNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handledishNotFound(
+            DishNotFoundException ex
+    ){
+        return ResponseEntity
+                .status(HttpStatus.OK)
                 .body(new ErrorResponse(ex.getMessage()));
     }
 }

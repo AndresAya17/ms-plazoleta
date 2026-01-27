@@ -1,8 +1,6 @@
 package com.pragma.plazoleta.infrastructure.input.rest;
 
-import com.pragma.plazoleta.application.dto.request.DishRequestDto;
 import com.pragma.plazoleta.application.dto.request.RestaurantRequestDto;
-import com.pragma.plazoleta.application.handler.IDishHandler;
 import com.pragma.plazoleta.application.handler.IRestaurantHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class RestaurantRestController {
 
     private final IRestaurantHandler restaurantHandler;
-    private final IDishHandler dishHandler;
 
     @Operation(summary = "add restaurant")
     @ApiResponses(value = {
@@ -37,14 +34,5 @@ public class RestaurantRestController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @Operation(summary = "add dish")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "dish created"),
-            @ApiResponse(responseCode = "400", description = "Invalid data"),
-    })
-    @PostMapping("/dish")
-    public ResponseEntity<Void> saveDish(@Valid @RequestBody DishRequestDto dishRequestDto){
-        dishHandler.saveDish(dishRequestDto);
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
+
 }
