@@ -37,6 +37,11 @@ public class RestaurantRestController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @Operation(summary = "add dish")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "dish created"),
+            @ApiResponse(responseCode = "400", description = "Invalid data"),
+    })
     @PostMapping("/dish")
     public ResponseEntity<Void> saveDish(@Valid @RequestBody DishRequestDto dishRequestDto){
         dishHandler.saveDish(dishRequestDto);
