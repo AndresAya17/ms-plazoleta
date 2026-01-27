@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/plazoleta/")
+@RequestMapping("/api/v1/plazoleta/dish")
 @RequiredArgsConstructor
 public class DishRestController {
     private final IDishHandler dishHandler;
@@ -23,13 +23,13 @@ public class DishRestController {
             @ApiResponse(responseCode = "201", description = "dish created"),
             @ApiResponse(responseCode = "400", description = "Invalid data"),
     })
-    @PostMapping("/dish")
+    @PostMapping("/")
     public ResponseEntity<Void> saveDish(@Valid @RequestBody DishRequestDto dishRequestDto){
         dishHandler.saveDish(dishRequestDto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @PatchMapping("/dish")
+    @PatchMapping("/")
     public ResponseEntity<Void> updateDish(@Valid @RequestBody UpdateDishRequestDto updateDishRequestDto){
         dishHandler.updateDish(updateDishRequestDto);
         return new ResponseEntity<>(HttpStatus.OK);

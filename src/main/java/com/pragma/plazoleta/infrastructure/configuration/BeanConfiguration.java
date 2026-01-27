@@ -4,7 +4,7 @@ import com.pragma.plazoleta.domain.api.IDishServicePort;
 import com.pragma.plazoleta.domain.api.IRestaurantServicePort;
 import com.pragma.plazoleta.domain.spi.IDishPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
-import com.pragma.plazoleta.domain.spi.IUserOwnerValidationPort;
+import com.pragma.plazoleta.domain.spi.IUserValidationPort;
 import com.pragma.plazoleta.domain.usecase.DishUseCase;
 import com.pragma.plazoleta.domain.usecase.RestaurantUseCase;
 import com.pragma.plazoleta.infrastructure.out.jpa.adapter.DishJpaAdapter;
@@ -23,7 +23,7 @@ public class BeanConfiguration {
 
     private final IRestaurantRepository restaurantRepository;
     private final IRestaurantEntityMapper restaurantEntityMapper;
-    private final IUserOwnerValidationPort userOwnerValidationPort;
+    private final IUserValidationPort userOwnerValidationPort;
     private final IDishRepository dishRepository;
     private final IDishEntityMapper dishEntityMapper;
 
