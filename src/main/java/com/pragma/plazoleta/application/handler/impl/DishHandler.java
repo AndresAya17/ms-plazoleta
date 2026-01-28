@@ -19,13 +19,13 @@ public class DishHandler implements IDishHandler {
     private final IDishRequestMapper dishRequestMapper;
 
     @Override
-    public void saveDish(DishRequestDto dishRequestDto) {
+    public void saveDish(DishRequestDto dishRequestDto, Long userId, String rol) {
         Dish dish = dishRequestMapper.toDish(dishRequestDto);
-        dishServicePort.saveDish(dish);
+        dishServicePort.saveDish(dish, userId, rol);
     }
 
     @Override
-    public void updateDish(UpdateDishRequestDto dto) {
-        dishServicePort.updateDish(dto.getDishId(), dto.getPrice(), dto.getDescription());
+    public void updateDish(UpdateDishRequestDto dto, Long userId, String rol) {
+        dishServicePort.updateDish(dto.getRestaurantId() ,dto.getDishId(), dto.getPrice(), dto.getDescription(), userId, rol);
     }
 }

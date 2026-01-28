@@ -24,14 +24,20 @@ public class DishRestController {
             @ApiResponse(responseCode = "400", description = "Invalid data"),
     })
     @PostMapping("/")
-    public ResponseEntity<Void> saveDish(@Valid @RequestBody DishRequestDto dishRequestDto){
-        dishHandler.saveDish(dishRequestDto);
+    public ResponseEntity<Void> saveDish(
+            @RequestAttribute("auth.userId") Long userId,
+            @RequestAttribute("auth.rol") String rol,
+            @Valid @RequestBody DishRequestDto dishRequestDto){
+        dishHandler.saveDish(dishRequestDto, userId, rol);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PatchMapping("/")
-    public ResponseEntity<Void> updateDish(@Valid @RequestBody UpdateDishRequestDto updateDishRequestDto){
-        dishHandler.updateDish(updateDishRequestDto);
+    public ResponseEntity<Void> updateDish(
+            @RequestAttribute("auth.userId") Long userId,
+            @RequestAttribute("auth.rol") String rol,
+            @Valid @RequestBody UpdateDishRequestDto updateDishRequestDto){
+        dishHandler.updateDish(updateDishRequestDto, userId, rol);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

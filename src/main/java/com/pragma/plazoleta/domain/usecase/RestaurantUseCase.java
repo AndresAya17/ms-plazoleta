@@ -5,23 +5,19 @@ import com.pragma.plazoleta.domain.exception.UserNotRolException;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.domain.model.Rol;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
-import com.pragma.plazoleta.domain.spi.IUserValidationPort;
 
 public class RestaurantUseCase implements IRestaurantServicePort {
 
     private final IRestaurantPersistencePort restaurantPersistencePort;
-    private final IUserValidationPort userOwnerValidationPort;
 
-    public RestaurantUseCase(IRestaurantPersistencePort restaurantPersistencePort, IUserValidationPort userOwnerValidationPort){
+    public RestaurantUseCase(IRestaurantPersistencePort restaurantPersistencePort){
         this.restaurantPersistencePort = restaurantPersistencePort;
-        this.userOwnerValidationPort = userOwnerValidationPort;
     }
 
     @Override
-    public void saveRestaurant(Restaurant restaurant) {
-        Rol rol = userOwnerValidationPort.getUserRol(restaurant.getOwnerId());
-        if (rol != Rol.ADMINISTRADOR){
-            throw new UserNotRolException(restaurant.getOwnerId());
+    public void saveRestaurant(Restaurant restaurant, Long userId, String rol) {
+        if (!Rol.ADMINISTRADOR.name().equals(rol)){
+            throw new UserNotRolException();
         }
         restaurantPersistencePort.saveRestaurant(restaurant);
     }

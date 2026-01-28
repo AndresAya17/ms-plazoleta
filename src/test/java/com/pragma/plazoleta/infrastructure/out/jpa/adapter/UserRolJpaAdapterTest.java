@@ -1,7 +1,5 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
-import com.pragma.plazoleta.application.dto.response.IsOwnerResponseDto;
-import com.pragma.plazoleta.application.dto.response.RolUserResponseDto;
 import com.pragma.plazoleta.domain.model.Rol;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

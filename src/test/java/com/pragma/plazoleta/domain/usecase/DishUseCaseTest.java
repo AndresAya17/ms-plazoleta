@@ -1,6 +1,5 @@
 package com.pragma.plazoleta.domain.usecase;
 
-import com.pragma.plazoleta.domain.exception.DishNotFoundException;
 import com.pragma.plazoleta.domain.exception.RestaurantOwnershipException;
 import com.pragma.plazoleta.domain.exception.UserNotRolException;
 import com.pragma.plazoleta.domain.model.Dish;
@@ -9,7 +8,6 @@ import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.domain.model.Rol;
 import com.pragma.plazoleta.domain.spi.IDishPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
-import com.pragma.plazoleta.domain.spi.IUserValidationPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,8 +32,7 @@ public class DishUseCaseTest {
 
         dishUseCase = new DishUseCase(
                 dishPersistencePort,
-                restaurantPersistencePort,
-                userValidationPort
+                restaurantPersistencePort
         );
     }
 

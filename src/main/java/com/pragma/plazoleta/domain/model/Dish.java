@@ -26,7 +26,7 @@ public class Dish {
         this.description = description;
         this.imageUrl = imageUrl;
         this.category = category;
-        this.active = false;
+        this.active = true;
         this.restaurantId = restaurantId;
         this.ownerId = ownerId;
     }

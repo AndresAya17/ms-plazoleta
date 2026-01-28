@@ -5,7 +5,6 @@ import com.pragma.plazoleta.domain.exception.UserNotRolException;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.domain.model.Rol;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
-import com.pragma.plazoleta.domain.spi.IUserValidationPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

@@ -1,5 +1,6 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
+import com.pragma.plazoleta.domain.exception.DataNotFoundException;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.RestaurantEntity;
@@ -20,7 +21,7 @@ public class RestaurantJpaAdapter implements IRestaurantPersistencePort {
 
     @Override
     public Restaurant findById(Long idRestaurant) {
-        RestaurantEntity restaurantEntity = restaurantRepository.findById(idRestaurant).orElseThrow(() -> new RuntimeException("restaurante no encontrado"));
+        RestaurantEntity restaurantEntity = restaurantRepository.findById(idRestaurant).orElseThrow(() -> new DataNotFoundException("restaurant"));
         return  restaurantEntityMapper.toRestaurant(restaurantEntity);
     }
 }

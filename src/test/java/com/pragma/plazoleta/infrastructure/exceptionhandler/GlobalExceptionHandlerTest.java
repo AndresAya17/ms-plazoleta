@@ -1,8 +1,7 @@
 package com.pragma.plazoleta.infrastructure.exceptionhandler;
 
-import com.pragma.plazoleta.domain.exception.DishNotFoundException;
+import com.pragma.plazoleta.domain.exception.DataNotFoundException;
 import com.pragma.plazoleta.domain.exception.RestaurantOwnershipException;
-import com.pragma.plazoleta.domain.exception.UserNotFoundException;
 import com.pragma.plazoleta.domain.exception.UserNotRolException;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -36,22 +35,22 @@ public class GlobalExceptionHandlerTest {
 
         @GetMapping("/user-not-owner")
         void userNotOwner() {
-            throw new UserNotRolException(10L);
+            throw new UserNotRolException();
         }
 
         @GetMapping("/restaurant-ownership")
         void restaurantOwnership() {
-            throw new RestaurantOwnershipException(5L, 10L);
+            throw new RestaurantOwnershipException();
         }
 
         @GetMapping("/user-not-found")
         void userNotFound() {
-            throw new UserNotFoundException(99L);
+            throw new DataNotFoundException("User");
         }
 
         @GetMapping("/dish-not-found")
         void dishNotFound() {
-            throw new DishNotFoundException(20L);
+            throw new DataNotFoundException("Dish");
         }
     }
 
