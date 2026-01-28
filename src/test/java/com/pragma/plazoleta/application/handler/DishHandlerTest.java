@@ -31,6 +31,9 @@ public class DishHandlerTest {
     @Test
     void shouldSaveDishSuccessfully() {
         // arrange
+        Long userId = 5L;
+        String rol = "PROPIETARIO";
+
         DishRequestDto requestDto = new DishRequestDto();
         requestDto.setName("Pizza");
         requestDto.setPrice(25000);
@@ -38,7 +41,6 @@ public class DishHandlerTest {
         requestDto.setImageUrl("http://image.com/pizza.jpg");
         requestDto.setCategory(DishCategory.MAIN_COURSE);
         requestDto.setRestaurantId(10L);
-        requestDto.setOwnerId(5L);
 
         Dish dish = new Dish(
                 null,
@@ -48,34 +50,44 @@ public class DishHandlerTest {
                 "http://image.com/pizza.jpg",
                 DishCategory.MAIN_COURSE,
                 10L,
-                5L
+                null
         );
 
         when(dishRequestMapper.toDish(requestDto)).thenReturn(dish);
 
         // act
-        dishHandler.saveDish(requestDto);
+        dishHandler.saveDish(requestDto, userId, rol);
 
         // assert
         verify(dishRequestMapper).toDish(requestDto);
-        verify(dishUseCase, times(1)).saveDish(dish);
+        verify(dishUseCase).saveDish(dish, userId, rol);
         verifyNoMoreInteractions(dishUseCase, dishRequestMapper);
     }
 
     @Test
     void shouldUpdateDishSuccessfully() {
         // arrange
+        Long userId = 5L;
+        String rol = "PROPIETARIO";
+
         UpdateDishRequestDto dto = new UpdateDishRequestDto();
+        dto.setRestaurantId(10L);
         dto.setDishId(1L);
         dto.setPrice(30000);
         dto.setDescription("Updated description");
 
         // act
-        dishHandler.updateDish(dto);
+        dishHandler.updateDish(dto, userId, rol);
 
         // assert
-        verify(dishUseCase, times(1))
-                .updateDish(1L, 30000, "Updated description");
+        verify(dishUseCase).updateDish(
+                10L,
+                1L,
+                30000,
+                "Updated description",
+                userId,
+                rol
+        );
 
         verifyNoMoreInteractions(dishUseCase);
     }

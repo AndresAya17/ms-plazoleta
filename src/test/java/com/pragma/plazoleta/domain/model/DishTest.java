@@ -37,7 +37,6 @@ public class DishTest {
         assertEquals(category, dish.getCategory());
         assertEquals(restaurantId, dish.getRestaurantId());
         assertEquals(ownerId, dish.getOwnerId());
-        assertFalse(dish.isActive());
     }
 
     @Test

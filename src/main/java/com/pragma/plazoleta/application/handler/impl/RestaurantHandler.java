@@ -17,8 +17,8 @@ public class RestaurantHandler implements IRestaurantHandler {
     private final IRestaurantRequestMapper restaurantRequestMapper;
 
     @Override
-    public void saveRestaurant(RestaurantRequestDto restaurantRequestDto) {
+    public void saveRestaurant(RestaurantRequestDto restaurantRequestDto, Long userId, String rol) {
         Restaurant restaurant = restaurantRequestMapper.toRestaurant((restaurantRequestDto));
-        restaurantServicePort.saveRestaurant(restaurant);
+        restaurantServicePort.saveRestaurant(restaurant, userId, rol);
     }
 }

@@ -6,8 +6,10 @@ import com.pragma.plazoleta.application.dto.request.UpdateDishRequestDto;
 import com.pragma.plazoleta.application.handler.IDishHandler;
 import com.pragma.plazoleta.application.handler.IRestaurantHandler;
 import com.pragma.plazoleta.domain.model.DishCategory;
+import com.pragma.plazoleta.domain.spi.IJwtPersistencePort;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -20,15 +22,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(DishRestController.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class DishRestControllerTest {
 
     private static final String DISH_URL = "/api/v1/plazoleta/dish/";
 
+    @MockBean
+    private IJwtPersistencePort jwtPersistencePort;
+
     @Autowired
     private MockMvc mockMvc;
-
-    @MockBean
-    private IRestaurantHandler restaurantHandler;
 
     @MockBean
     private IDishHandler dishHandler;
@@ -36,7 +39,6 @@ public class DishRestControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private static final String BASE_URL = "/api/v1/plazoleta";
 
     @Test
     void shouldReturn201WhenDishIsCreated() throws Exception {
@@ -47,24 +49,35 @@ public class DishRestControllerTest {
         dto.setImageUrl("https://img.com/pasta.png");
         dto.setCategory(DishCategory.MAIN_COURSE);
         dto.setRestaurantId(1L);
-        dto.setOwnerId(10L);
 
-        doNothing().when(dishHandler).saveDish(any(DishRequestDto.class));
+        Long userId = 10L;
+        String rol = "OWNER";
+
+        doNothing().when(dishHandler)
+                .saveDish(any(DishRequestDto.class), anyLong(), anyString());
 
         mockMvc.perform(post(DISH_URL)
                         .contentType(MediaType.APPLICATION_JSON)
+                        .requestAttr("auth.userId", userId)
+                        .requestAttr("auth.rol", rol)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated());
 
-        verify(dishHandler).saveDish(any(DishRequestDto.class));
+        verify(dishHandler).saveDish(
+                any(DishRequestDto.class),
+                eq(userId),
+                eq(rol)
+        );
     }
 
     @Test
     void shouldReturn400WhenDishRequestIsInvalid() throws Exception {
-        DishRequestDto dto = new DishRequestDto(); // vacío → inválido
+        DishRequestDto dto = new DishRequestDto();
 
         mockMvc.perform(post(DISH_URL)
                         .contentType(MediaType.APPLICATION_JSON)
+                        .requestAttr("auth.userId", 1L)
+                        .requestAttr("auth.rol", "OWNER")
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest());
 
@@ -77,15 +90,27 @@ public class DishRestControllerTest {
         dto.setDishId(1L);
         dto.setPrice(30000);
         dto.setDescription("Updated description");
+        dto.setRestaurantId(1L);
 
-        doNothing().when(dishHandler).updateDish(any(UpdateDishRequestDto.class));
+        Long userId = 10L;
+        String rol = "OWNER";
 
-        mockMvc.perform(patch(DISH_URL)
+        doNothing().when(dishHandler)
+                .updateDish(any(UpdateDishRequestDto.class), anyLong(), anyString());
+
+        // act & assert
+        mockMvc.perform(patch("/api/v1/plazoleta/dish/")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .requestAttr("auth.userId", userId)
+                        .requestAttr("auth.rol", rol)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isOk());
 
-        verify(dishHandler).updateDish(any(UpdateDishRequestDto.class));
+        verify(dishHandler).updateDish(
+                any(UpdateDishRequestDto.class),
+                eq(userId),
+                eq(rol)
+        );
     }
 
 

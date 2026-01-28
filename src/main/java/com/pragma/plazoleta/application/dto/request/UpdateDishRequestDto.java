@@ -19,4 +19,7 @@ public class UpdateDishRequestDto {
 
     @NotBlank
     private String description;
+
+    @NotNull(message = "The restaurant id is required")
+    private Long restaurantId;
 }

@@ -5,7 +5,6 @@ import com.pragma.plazoleta.domain.exception.UserNotRolException;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.domain.model.Rol;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
-import com.pragma.plazoleta.domain.spi.IUserValidationPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,46 +20,35 @@ public class RestaurantUseCaseTest {
     @Mock
     private IRestaurantPersistencePort restaurantPersistencePort;
 
-    @Mock
-    private IUserValidationPort userOwnerValidationPort;
-
     @InjectMocks
     private RestaurantUseCase restaurantUseCase;
 
     @Test
     void shouldSaveRestaurantWhenUserIsAdministrator() {
-        // arrange
         Restaurant restaurant = new Restaurant();
-        restaurant.setOwnerId(1L);
+        restaurant.setName("Mi Restaurante");
 
-        when(userOwnerValidationPort.getUserRol(1L))
-                .thenReturn(Rol.ADMINISTRADOR);
+        Long userId = 1L;
+        String rol = Rol.ADMINISTRADOR.name();
 
-        // act
-        restaurantUseCase.saveRestaurant(restaurant);
-
-        // assert
-        verify(userOwnerValidationPort).getUserRol(1L);
+        restaurantUseCase.saveRestaurant(restaurant, userId, rol);
         verify(restaurantPersistencePort).saveRestaurant(restaurant);
-        verifyNoMoreInteractions(userOwnerValidationPort, restaurantPersistencePort);
+        verifyNoMoreInteractions(restaurantPersistencePort);
     }
 
     @Test
     void shouldThrowUserNotRolExceptionWhenUserIsNotAdministrator() {
-        // arrange
         Restaurant restaurant = new Restaurant();
-        restaurant.setOwnerId(2L);
+        restaurant.setName("Mi Restaurante");
 
-        when(userOwnerValidationPort.getUserRol(2L))
-                .thenReturn(Rol.PROPIETARIO);
+        Long userId = 2L;
+        String rol = Rol.PROPIETARIO.name();
 
-        // act & assert
         assertThrows(
                 UserNotRolException.class,
-                () -> restaurantUseCase.saveRestaurant(restaurant)
+                () -> restaurantUseCase.saveRestaurant(restaurant, userId, rol)
         );
 
-        verify(userOwnerValidationPort).getUserRol(2L);
         verifyNoInteractions(restaurantPersistencePort);
     }
 }

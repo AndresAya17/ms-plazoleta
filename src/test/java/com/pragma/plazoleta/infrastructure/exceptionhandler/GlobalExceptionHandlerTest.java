@@ -1,8 +1,7 @@
 package com.pragma.plazoleta.infrastructure.exceptionhandler;
 
-import com.pragma.plazoleta.domain.exception.DishNotFoundException;
+import com.pragma.plazoleta.domain.exception.DataNotFoundException;
 import com.pragma.plazoleta.domain.exception.RestaurantOwnershipException;
-import com.pragma.plazoleta.domain.exception.UserNotFoundException;
 import com.pragma.plazoleta.domain.exception.UserNotRolException;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -34,60 +33,57 @@ public class GlobalExceptionHandlerTest {
     @RestController
     static class TestController {
 
-        @GetMapping("/user-not-owner")
-        void userNotOwner() {
-            throw new UserNotRolException(10L);
+        @GetMapping("/user-not-rol")
+        void userNotRol() {
+            throw new UserNotRolException();
         }
 
         @GetMapping("/restaurant-ownership")
         void restaurantOwnership() {
-            throw new RestaurantOwnershipException(5L, 10L);
+            throw new RestaurantOwnershipException();
         }
 
         @GetMapping("/user-not-found")
         void userNotFound() {
-            throw new UserNotFoundException(99L);
+            throw new DataNotFoundException("User");
         }
 
         @GetMapping("/dish-not-found")
         void dishNotFound() {
-            throw new DishNotFoundException(20L);
+            throw new DataNotFoundException("Dish");
         }
     }
 
     @Test
-    void shouldReturn403WhenUserNotOwnerExceptionIsThrown() throws Exception {
-        mockMvc.perform(get("/user-not-owner")
-                        .accept(MediaType.APPLICATION_JSON))
+    void shouldReturn403WhenUserNotRolExceptionIsThrown() throws Exception {
+        mockMvc.perform(get("/user-not-rol"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message")
-                        .value(containsString("no tiene el rol permitido")));
+                        .value(containsString("rol permitido")));
     }
 
     @Test
     void shouldReturn403WhenRestaurantOwnershipExceptionIsThrown() throws Exception {
-        mockMvc.perform(get("/restaurant-ownership")
-                        .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/restaurant-ownership"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message")
-                        .value(containsString("no es propietario")));
+                        .value(containsString("not the owner")));
     }
 
     @Test
     void shouldReturn404WhenUserNotFoundExceptionIsThrown() throws Exception {
-        mockMvc.perform(get("/user-not-found")
-                        .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/user-not-found"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message")
-                        .value(containsString("not found")));
+                        .value(containsString("User not found")));
     }
+
     @Test
-    void shouldReturn200WhenDishNotFoundExceptionIsThrown() throws Exception {
-        mockMvc.perform(get("/dish-not-found")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+    void shouldReturn404WhenDishNotFoundExceptionIsThrown() throws Exception {
+        mockMvc.perform(get("/dish-not-found"))
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message")
-                        .value(containsString("not found")));
+                        .value(containsString("Dish not found")));
     }
 }
 
