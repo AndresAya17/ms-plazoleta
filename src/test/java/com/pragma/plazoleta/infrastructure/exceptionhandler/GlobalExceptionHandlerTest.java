@@ -33,8 +33,8 @@ public class GlobalExceptionHandlerTest {
     @RestController
     static class TestController {
 
-        @GetMapping("/user-not-owner")
-        void userNotOwner() {
+        @GetMapping("/user-not-rol")
+        void userNotRol() {
             throw new UserNotRolException();
         }
 
@@ -55,38 +55,35 @@ public class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void shouldReturn403WhenUserNotOwnerExceptionIsThrown() throws Exception {
-        mockMvc.perform(get("/user-not-owner")
-                        .accept(MediaType.APPLICATION_JSON))
+    void shouldReturn403WhenUserNotRolExceptionIsThrown() throws Exception {
+        mockMvc.perform(get("/user-not-rol"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message")
-                        .value(containsString("no tiene el rol permitido")));
+                        .value(containsString("rol permitido")));
     }
 
     @Test
     void shouldReturn403WhenRestaurantOwnershipExceptionIsThrown() throws Exception {
-        mockMvc.perform(get("/restaurant-ownership")
-                        .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/restaurant-ownership"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message")
-                        .value(containsString("no es propietario")));
+                        .value(containsString("not the owner")));
     }
 
     @Test
     void shouldReturn404WhenUserNotFoundExceptionIsThrown() throws Exception {
-        mockMvc.perform(get("/user-not-found")
-                        .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/user-not-found"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message")
-                        .value(containsString("not found")));
+                        .value(containsString("User not found")));
     }
+
     @Test
-    void shouldReturn200WhenDishNotFoundExceptionIsThrown() throws Exception {
-        mockMvc.perform(get("/dish-not-found")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+    void shouldReturn404WhenDishNotFoundExceptionIsThrown() throws Exception {
+        mockMvc.perform(get("/dish-not-found"))
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message")
-                        .value(containsString("not found")));
+                        .value(containsString("Dish not found")));
     }
 }
 

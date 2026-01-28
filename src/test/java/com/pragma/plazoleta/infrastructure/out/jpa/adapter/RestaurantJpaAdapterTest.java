@@ -1,5 +1,6 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
+import com.pragma.plazoleta.domain.exception.DataNotFoundException;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.RestaurantEntity;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IRestaurantEntityMapper;
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -66,4 +69,39 @@ public class RestaurantJpaAdapterTest {
                 restaurantEntityMapper
         );
     }
+    @Test
+    void shouldFindRestaurantByIdAndReturnMappedRestaurant() {
+        // arrange
+        Long restaurantId = 1L;
+
+        RestaurantEntity entityFound = new RestaurantEntity();
+        entityFound.setId(restaurantId);
+        entityFound.setName("Restaurante Test");
+
+        Restaurant mappedRestaurant = new Restaurant();
+        mappedRestaurant.setId(restaurantId);
+        mappedRestaurant.setName("Restaurante Test");
+
+        when(restaurantRepository.findById(restaurantId))
+                .thenReturn(Optional.of(entityFound));
+
+        when(restaurantEntityMapper.toRestaurant(entityFound))
+                .thenReturn(mappedRestaurant);
+
+        // act
+        Restaurant result = restaurantJpaAdapter.findById(restaurantId);
+
+        // assert
+        assertNotNull(result);
+        assertEquals(restaurantId, result.getId());
+        assertEquals("Restaurante Test", result.getName());
+
+        verify(restaurantRepository, times(1)).findById(restaurantId);
+        verify(restaurantEntityMapper, times(1)).toRestaurant(entityFound);
+        verifyNoMoreInteractions(
+                restaurantRepository,
+                restaurantEntityMapper
+        );
+    }
+
 }

@@ -26,8 +26,10 @@ public class RestaurantHandlerTest {
     private RestaurantHandler restaurantHandler;
 
     @Test
-    void shouldMapDtoAndCallServiceWhenSaveRestaurantIsInvoked() {
-        // arrange
+    void shouldMapDtoAndCallServiceWithUserIdAndRol() {
+        Long userId = 1L;
+        String rol = "ADMINISTRADOR";
+
         RestaurantRequestDto dto = new RestaurantRequestDto();
         dto.setName("Restaurante Test");
 
@@ -36,12 +38,11 @@ public class RestaurantHandlerTest {
 
         when(restaurantRequestMapper.toRestaurant(dto)).thenReturn(restaurant);
 
-        // act
-        restaurantHandler.saveRestaurant(dto);
+        restaurantHandler.saveRestaurant(dto, userId, rol);
 
-        // assert
-        verify(restaurantRequestMapper, times(1)).toRestaurant(dto);
-        verify(restaurantServicePort, times(1)).saveRestaurant(restaurant);
+        verify(restaurantRequestMapper).toRestaurant(dto);
+        verify(restaurantServicePort)
+                .saveRestaurant(restaurant, userId, rol);
         verifyNoMoreInteractions(restaurantRequestMapper, restaurantServicePort);
     }
 }
