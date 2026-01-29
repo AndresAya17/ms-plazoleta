@@ -23,6 +23,7 @@ public class DishUseCase implements IDishServicePort {
     @Override
     public void saveDish(Dish dish, Long userId, String rol) {
 
+        dish.validate();
         if (!Rol.PROPIETARIO.name().equals(rol)){
             throw new UserNotRolException();
         }
@@ -50,6 +51,7 @@ public class DishUseCase implements IDishServicePort {
                 .orElseThrow(() -> new DataNotFoundException("Dish"));
         dish.setPrice(price);
         dish.setDescription(description);
-        dishPersistencePort.updateDish(dish);
+        dish.validateForUpdate();
+        dishPersistencePort.saveDish(dish);
     }
 }
