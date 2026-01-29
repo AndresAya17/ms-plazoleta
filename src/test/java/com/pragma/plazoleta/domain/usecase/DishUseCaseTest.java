@@ -89,17 +89,17 @@ public class DishUseCaseTest {
     void shouldUpdateDishSuccessfully() {
         Long restaurantId = 10L;
         Long dishId = 1L;
+        Long userId = 5L;
 
-        Dish dish = new Dish(
+        Dish.DishInfo dishInfo = new Dish.DishInfo(
                 dishId,
                 "Pizza",
                 25000,
                 "Old description",
                 "http://img.com/pizza.png",
-                DishCategory.MAIN_COURSE,
-                restaurantId,
-                5L
+                DishCategory.MAIN_COURSE
         );
+        Dish dish = new Dish(dishInfo, restaurantId, userId);
 
         Restaurant restaurant = new Restaurant();
         restaurant.setId(restaurantId);
@@ -123,7 +123,7 @@ public class DishUseCaseTest {
         assertEquals(30000, dish.getPrice());
         assertEquals("Updated description", dish.getDescription());
 
-        verify(dishPersistencePort).updateDish(dish);
+        verify(dishPersistencePort).saveDish(dish);
     }
 
     @Test
@@ -154,21 +154,21 @@ public class DishUseCaseTest {
         );
 
         verify(dishPersistencePort).findById(dishId);
-        verify(dishPersistencePort, never()).updateDish(any());
+        verify(dishPersistencePort, never()).saveDish(any());
     }
 
     // ---------- UTIL ----------
 
     private Dish buildDish(Long ownerId, Long restaurantId) {
-        return new Dish(
+        Dish.DishInfo info = new Dish.DishInfo(
                 null,
                 "Pizza",
                 25000,
                 "Delicious pizza",
                 "http://image.com/pizza.jpg",
-                DishCategory.MAIN_COURSE,
-                restaurantId,
-                ownerId
+                DishCategory.MAIN_COURSE
         );
+
+        return new Dish(info, restaurantId, ownerId);
     }
 }

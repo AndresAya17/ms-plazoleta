@@ -42,15 +42,19 @@ public class DishHandlerTest {
         requestDto.setCategory(DishCategory.MAIN_COURSE);
         requestDto.setRestaurantId(10L);
 
-        Dish dish = new Dish(
+        Dish.DishInfo dishInfo = new Dish.DishInfo(
                 null,
                 "Pizza",
                 25000,
                 "Delicious pizza",
                 "http://image.com/pizza.jpg",
-                DishCategory.MAIN_COURSE,
-                10L,
-                null
+                DishCategory.MAIN_COURSE
+        );
+
+        Dish dish = new Dish(
+                dishInfo,
+                requestDto.getRestaurantId(),
+                userId
         );
 
         when(dishRequestMapper.toDish(requestDto)).thenReturn(dish);

@@ -103,7 +103,7 @@ public class DishJpaAdapterTest {
                 .thenReturn(expectedDish);
 
         // act
-        Dish result = dishJpaAdapter.updateDish(dish);
+        Dish result = dishJpaAdapter.saveDish(dish);
 
         // assert
         assertThat(result).isNotNull();

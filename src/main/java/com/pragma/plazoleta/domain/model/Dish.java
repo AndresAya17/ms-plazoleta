@@ -1,5 +1,6 @@
 package com.pragma.plazoleta.domain.model;
 
+import com.pragma.plazoleta.domain.exception.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,16 +19,76 @@ public class Dish {
     private Long restaurantId;
     private Long ownerId;
 
+    public record DishInfo(
+            Long id,
+            String name,
+            Integer price,
+            String description,
+            String imageUrl,
+            DishCategory category
+    ) {}
 
-    public Dish(Long id, String name, Integer price, String description, String imageUrl, DishCategory category, Long restaurantId, Long ownerId) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
-        this.description = description;
-        this.imageUrl = imageUrl;
-        this.category = category;
-        this.active = true;
+
+    public Dish(DishInfo info, Long restaurantId, Long ownerId) {
+        this.id = info.id;
+        this.name = info.name;
+        this.price = info.price;
+        this.description = info.description;
+        this.imageUrl = info.imageUrl;
+        this.category = info.category;
         this.restaurantId = restaurantId;
         this.ownerId = ownerId;
+        this.active = true;
+        validate();
     }
+    public void validate() {
+        validateName();
+        validatePrice();
+        validateDescription();
+        validateImageUrl();
+        validateCategory();
+        validateRestaurantId();
+    }
+
+    public void validateForUpdate() {
+        validatePrice();
+        validateDescription();
+    }
+
+    public void validateName() {
+        if (name == null || name.trim().isEmpty()) {
+            throw new InvalidDishNameException();
+        }
+    }
+
+    public void validatePrice() {
+        if (price == null || price <= 0) {
+            throw new InvalidDishPriceException();
+        }
+    }
+
+    public void validateDescription() {
+        if (description == null || description.trim().isEmpty()) {
+            throw new InvalidDishDescriptionException();
+        }
+    }
+
+    public void validateImageUrl() {
+        if (imageUrl == null || imageUrl.trim().isEmpty()) {
+            throw new InvalidDishImageException();
+        }
+    }
+
+    public void validateCategory() {
+        if (category == null) {
+            throw new InvalidDishCategoryException();
+        }
+    }
+
+    public void validateRestaurantId() {
+        if (restaurantId == null || restaurantId <= 0) {
+            throw new InvalidRestaurantIdException();
+        }
+    }
+
 }
