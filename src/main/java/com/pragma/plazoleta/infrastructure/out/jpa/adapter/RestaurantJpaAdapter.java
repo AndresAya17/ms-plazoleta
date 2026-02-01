@@ -1,6 +1,5 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
-import com.pragma.plazoleta.domain.exception.DataNotFoundException;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.RestaurantEntity;

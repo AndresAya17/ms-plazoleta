@@ -1,7 +1,8 @@
 package com.pragma.plazoleta.domain.model;
 
 import com.pragma.plazoleta.domain.constants.DomainConstants;
-import com.pragma.plazoleta.domain.exception.InvalidEmployeeException;
+import com.pragma.plazoleta.domain.exception.DomainException;
+import com.pragma.plazoleta.domain.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,49 +34,49 @@ public class EmployeeForRestaurantCommand {
 
     public void validateRestaurantId() {
         if (restaurantId == null || restaurantId <= 0) {
-            throw new InvalidEmployeeException("RestaurantId is invalid");
+            throw new DomainException(ErrorCode.INVALID_EMPLOYEE, "RestaurantId is invalid");
         }
     }
 
     public void validateOwnerId() {
         if (ownerId == null || ownerId <= 0) {
-            throw new InvalidEmployeeException("OwnerId is invalid");
+            throw new DomainException(ErrorCode.INVALID_EMPLOYEE, "OwnerId is invalid");
         }
     }
 
     public void validateName() {
         if (firstName == null || firstName.trim().isEmpty()) {
-            throw new InvalidEmployeeException("Employee name is invalid");
+            throw new DomainException(ErrorCode.INVALID_EMPLOYEE, "Employee name is invalid");
         }
     }
 
     public void validateLastName() {
         if (lastName == null || lastName.trim().isEmpty()) {
-            throw new InvalidEmployeeException("Employee lastname is invalid");
+            throw new DomainException(ErrorCode.INVALID_EMPLOYEE, "Employee lastname is invalid");
         }
     }
 
     public void validateDocumentId() {
         if (documentNumber == null || !documentNumber.matches(DomainConstants.DOCUMENT_NUMBER_REGEX)) {
-            throw new InvalidEmployeeException("Employee documentId is invalid");
+            throw new DomainException(ErrorCode.INVALID_EMPLOYEE, "Employee documentId is invalid");
         }
     }
 
     public void validatePhone() {
         if (phoneNumber == null || !phoneNumber.matches(DomainConstants.PHONE_NUMBER_REGEX)) {
-            throw new InvalidEmployeeException("Employee phone is invalid");
+            throw new DomainException(ErrorCode.INVALID_EMPLOYEE, "Employee phone is invalid");
         }
     }
 
     public void validateEmail() {
         if (email == null || !email.contains("@")) {
-            throw new InvalidEmployeeException("Employee email is invalid");
+            throw new DomainException(ErrorCode.INVALID_EMPLOYEE, "Employee email is invalid");
         }
     }
 
     public void validatePassword() {
         if (password == null || password.trim().isEmpty()) {
-            throw new InvalidEmployeeException("Employee password is invalid");
+            throw new DomainException(ErrorCode.INVALID_EMPLOYEE, "Employee password is invalid");
         }
     }
 }

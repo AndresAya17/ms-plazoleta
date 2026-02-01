@@ -1,9 +1,7 @@
 package com.pragma.plazoleta.domain.usecase;
 
 import com.pragma.plazoleta.domain.api.IDishServicePort;
-import com.pragma.plazoleta.domain.exception.DataNotFoundException;
-import com.pragma.plazoleta.domain.exception.RestaurantOwnershipException;
-import com.pragma.plazoleta.domain.exception.UserNotRolException;
+import com.pragma.plazoleta.domain.exception.*;
 import com.pragma.plazoleta.domain.model.Dish;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.domain.model.Rol;
@@ -25,13 +23,13 @@ public class DishUseCase implements IDishServicePort {
 
         dish.validate();
         if (!Rol.PROPIETARIO.name().equals(rol)){
-            throw new UserNotRolException();
+            throw new DomainException(ErrorCode.UNAUTHORIZED, "Only a restaurant owner can create dishes");
         }
 
         Restaurant restaurant = restaurantPersistencePort.findById(dish.getRestaurantId())
-                .orElseThrow(() -> new DataNotFoundException("Restaurant"));
+                .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, "Restaurant not found"));
         if (!restaurant.getOwnerId().equals(userId)) {
-            throw new RestaurantOwnershipException();
+            throw new DomainException(ErrorCode.FORBIDDEN, "You are not allowed to create dishes for this restaurant");
         }
         dishPersistencePort.saveDish(dish);
 
@@ -40,17 +38,16 @@ public class DishUseCase implements IDishServicePort {
     @Override
     public void updateDish(Long restaurantId, Long dishId, Integer price, String description, Long userId, String rol) {
         if (!Rol.PROPIETARIO.name().equals(rol)){
-            throw new UserNotRolException();
+            throw new DomainException(ErrorCode.UNAUTHORIZED, "Only a restaurant owner can create dishes");
         }
         Restaurant restaurant = restaurantPersistencePort.findById(restaurantId)
-                .orElseThrow(() -> new DataNotFoundException("Restaurant"));
+                .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, "Restaurant not found"));
         if (!restaurant.getOwnerId().equals(userId)) {
-            throw new RestaurantOwnershipException();
+            throw new DomainException(ErrorCode.FORBIDDEN, "You are not allowed to create dishes for this restaurant");
         }
 
-
         Dish dish = dishPersistencePort.findById(dishId)
-                .orElseThrow(() -> new DataNotFoundException("Dish"));
+                .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, "Dish not found"));
         dish.setPrice(price);
         dish.setDescription(description);
         dish.validateForUpdate();

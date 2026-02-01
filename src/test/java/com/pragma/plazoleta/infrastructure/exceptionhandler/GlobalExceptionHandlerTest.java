@@ -1,12 +1,9 @@
 package com.pragma.plazoleta.infrastructure.exceptionhandler;
 
-import com.pragma.plazoleta.domain.exception.DataNotFoundException;
-import com.pragma.plazoleta.domain.exception.RestaurantOwnershipException;
-import com.pragma.plazoleta.domain.exception.UserNotRolException;
-
+import com.pragma.plazoleta.domain.exception.DomainException;
+import com.pragma.plazoleta.domain.exception.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class GlobalExceptionHandlerTest {
+class GlobalExceptionHandlerTest {
 
     private MockMvc mockMvc;
 
@@ -33,57 +30,69 @@ public class GlobalExceptionHandlerTest {
     @RestController
     static class TestController {
 
-        @GetMapping("/user-not-rol")
-        void userNotRol() {
-            throw new UserNotRolException();
+        @GetMapping("/unauthorized")
+        void unauthorized() {
+            throw new DomainException(
+                    ErrorCode.UNAUTHORIZED,
+                    "Unauthorized action"
+            );
         }
 
-        @GetMapping("/restaurant-ownership")
-        void restaurantOwnership() {
-            throw new RestaurantOwnershipException();
+        @GetMapping("/forbidden")
+        void forbidden() {
+            throw new DomainException(
+                    ErrorCode.FORBIDDEN,
+                    "Forbidden action"
+            );
         }
 
-        @GetMapping("/user-not-found")
-        void userNotFound() {
-            throw new DataNotFoundException("User");
+        @GetMapping("/not-found")
+        void notFound() {
+            throw new DomainException(
+                    ErrorCode.DATA_NOT_FOUND,
+                    "Resource not found"
+            );
         }
 
-        @GetMapping("/dish-not-found")
-        void dishNotFound() {
-            throw new DataNotFoundException("Dish");
+        @GetMapping("/bad-request")
+        void badRequest() {
+            throw new DomainException(
+                    ErrorCode.INVALID_RESTAURANT,
+                    "Invalid restaurant data"
+            );
         }
     }
 
     @Test
-    void shouldReturn403WhenUserNotRolExceptionIsThrown() throws Exception {
-        mockMvc.perform(get("/user-not-rol"))
+    void shouldReturn401WhenErrorCodeIsUnauthorized() throws Exception {
+        mockMvc.perform(get("/unauthorized"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.errorCode").value("UNAUTHORIZED"))
+                .andExpect(jsonPath("$.message").value("Unauthorized action"));
+    }
+
+    @Test
+    void shouldReturn403WhenErrorCodeIsForbidden() throws Exception {
+        mockMvc.perform(get("/forbidden"))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.message")
-                        .value(containsString("rol permitido")));
+                .andExpect(jsonPath("$.errorCode").value("FORBIDDEN"))
+                .andExpect(jsonPath("$.message").value("Forbidden action"));
     }
 
     @Test
-    void shouldReturn403WhenRestaurantOwnershipExceptionIsThrown() throws Exception {
-        mockMvc.perform(get("/restaurant-ownership"))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.message")
-                        .value(containsString("not the owner")));
-    }
-
-    @Test
-    void shouldReturn404WhenUserNotFoundExceptionIsThrown() throws Exception {
-        mockMvc.perform(get("/user-not-found"))
+    void shouldReturn404WhenErrorCodeIsDataNotFound() throws Exception {
+        mockMvc.perform(get("/not-found"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message")
-                        .value(containsString("User not found")));
+                .andExpect(jsonPath("$.errorCode").value("DATA_NOT_FOUND"))
+                .andExpect(jsonPath("$.message").value("Resource not found"));
     }
 
     @Test
-    void shouldReturn404WhenDishNotFoundExceptionIsThrown() throws Exception {
-        mockMvc.perform(get("/dish-not-found"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message")
-                        .value(containsString("Dish not found")));
+    void shouldReturn400WhenErrorCodeIsInvalidRestaurant() throws Exception {
+        mockMvc.perform(get("/bad-request"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value("INVALID_RESTAURANT"))
+                .andExpect(jsonPath("$.message").value("Invalid restaurant data"));
     }
 }
 

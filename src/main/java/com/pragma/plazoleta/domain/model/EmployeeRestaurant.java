@@ -1,7 +1,7 @@
 package com.pragma.plazoleta.domain.model;
 
 import com.pragma.plazoleta.domain.exception.DomainException;
-import com.pragma.plazoleta.domain.exception.InvalidEmployeeRestaurant;
+import com.pragma.plazoleta.domain.exception.ErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,14 +26,14 @@ public class EmployeeRestaurant {
 
     private void validateEmployeeUserId() {
         if (employeeUserId == null || employeeUserId <= 0) {
-            throw new InvalidEmployeeRestaurant("Employee user id is invalid") {
+            throw new DomainException(ErrorCode.INVALID_EMPLOYEE, "Employee user id is invalid") {
             };
         }
     }
 
     private void validateRestaurantId() {
         if (restaurantId == null || restaurantId <= 0) {
-            throw new InvalidEmployeeRestaurant("Restaurant id is invalid");
+            throw new DomainException(ErrorCode.INVALID_EMPLOYEE, "Restaurant id is invalid");
         }
     }
 }

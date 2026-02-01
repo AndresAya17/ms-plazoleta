@@ -46,10 +46,13 @@ class RestaurantTest {
         Restaurant restaurant = new Restaurant();
         restaurant.setName(null);
 
-        assertThrows(
-                InvalidRestaurantNameException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 restaurant::validateName
         );
+
+        assertEquals(ErrorCode.INVALID_RESTAURANT, exception.getErrorCode());
+        assertEquals("Restaurant name is required", exception.getMessage());
     }
 
     @Test
@@ -57,10 +60,13 @@ class RestaurantTest {
         Restaurant restaurant = new Restaurant();
         restaurant.setName("   ");
 
-        assertThrows(
-                InvalidRestaurantNameException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 restaurant::validateName
         );
+
+        assertEquals(ErrorCode.INVALID_RESTAURANT, exception.getErrorCode());
+        assertEquals("Restaurant name is required", exception.getMessage());
     }
 
     @Test
@@ -77,10 +83,13 @@ class RestaurantTest {
         Restaurant restaurant = new Restaurant();
         restaurant.setNit("ABC123");
 
-        assertThrows(
-                InvalidRestaurantNitException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 restaurant::validateNit
         );
+
+        assertEquals(ErrorCode.INVALID_RESTAURANT, exception.getErrorCode());
+        assertEquals("Restaurant nit is required", exception.getMessage());
     }
 
     @Test
@@ -97,10 +106,13 @@ class RestaurantTest {
         Restaurant restaurant = new Restaurant();
         restaurant.setAddress(null);
 
-        assertThrows(
-                InvalidRestaurantAddressException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 restaurant::validateAddress
         );
+
+        assertEquals(ErrorCode.INVALID_RESTAURANT, exception.getErrorCode());
+        assertEquals("Restaurant address is required", exception.getMessage());
     }
 
     @Test
@@ -108,10 +120,13 @@ class RestaurantTest {
         Restaurant restaurant = new Restaurant();
         restaurant.setAddress("   ");
 
-        assertThrows(
-                InvalidRestaurantAddressException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 restaurant::validateAddress
         );
+
+        assertEquals(ErrorCode.INVALID_RESTAURANT, exception.getErrorCode());
+        assertEquals("Restaurant address is required", exception.getMessage());
     }
 
     @Test
@@ -127,10 +142,13 @@ class RestaurantTest {
         Restaurant restaurant = new Restaurant();
         restaurant.setPhoneNumber("ABC999");
 
-        assertThrows(
-                InvalidRestaurantPhoneException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 restaurant::validatePhoneNumber
         );
+
+        assertEquals(ErrorCode.INVALID_RESTAURANT, exception.getErrorCode());
+        assertEquals("Restaurant phone is required", exception.getMessage());
     }
 
     @Test
@@ -147,10 +165,13 @@ class RestaurantTest {
         Restaurant restaurant = new Restaurant();
         restaurant.setLogoUrl(null);
 
-        assertThrows(
-                InvalidRestaurantLogoException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 restaurant::validateLogoUrl
         );
+
+        assertEquals(ErrorCode.INVALID_RESTAURANT, exception.getErrorCode());
+        assertEquals("Restaurant logo_url is required", exception.getMessage());
     }
 
     @Test
@@ -158,10 +179,13 @@ class RestaurantTest {
         Restaurant restaurant = new Restaurant();
         restaurant.setLogoUrl("   ");
 
-        assertThrows(
-                InvalidRestaurantLogoException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 restaurant::validateLogoUrl
         );
+
+        assertEquals(ErrorCode.INVALID_RESTAURANT, exception.getErrorCode());
+        assertEquals("Restaurant logo_url is required", exception.getMessage());
     }
 
     @Test
@@ -178,10 +202,13 @@ class RestaurantTest {
         Restaurant restaurant = new Restaurant();
         restaurant.setOwnerId(null);
 
-        assertThrows(
-                InvalidRestaurantOwnerException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 restaurant::validateOwnerId
         );
+
+        assertEquals(ErrorCode.INVALID_RESTAURANT, exception.getErrorCode());
+        assertEquals("Restaurant owner is required", exception.getMessage());
     }
 
     @Test
@@ -189,10 +216,13 @@ class RestaurantTest {
         Restaurant restaurant = new Restaurant();
         restaurant.setOwnerId(0L);
 
-        assertThrows(
-                InvalidRestaurantOwnerException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 restaurant::validateOwnerId
         );
+
+        assertEquals(ErrorCode.INVALID_RESTAURANT, exception.getErrorCode());
+        assertEquals("Restaurant owner is required", exception.getMessage());
     }
 
     @Test
@@ -200,10 +230,13 @@ class RestaurantTest {
         Restaurant restaurant = new Restaurant();
         restaurant.setOwnerId(-5L);
 
-        assertThrows(
-                InvalidRestaurantOwnerException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 restaurant::validateOwnerId
         );
+
+        assertEquals(ErrorCode.INVALID_RESTAURANT, exception.getErrorCode());
+        assertEquals("Restaurant owner is required", exception.getMessage());
     }
 
     @Test

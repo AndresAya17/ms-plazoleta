@@ -103,10 +103,13 @@ class DishTest {
                 null, null, 25000, "Desc", "url", DishCategory.MAIN_COURSE
         );
 
-        assertThrows(
-                InvalidDishNameException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 () -> new Dish(info, 1L, 1L)
         );
+
+        assertEquals(ErrorCode.INVALID_DISH, exception.getErrorCode());
+        assertEquals("Dish name is required", exception.getMessage());
     }
 
     @Test
@@ -115,10 +118,13 @@ class DishTest {
                 null, "   ", 25000, "Desc", "url", DishCategory.MAIN_COURSE
         );
 
-        assertThrows(
-                InvalidDishNameException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 () -> new Dish(info, 1L, 1L)
         );
+
+        assertEquals(ErrorCode.INVALID_DISH, exception.getErrorCode());
+        assertEquals("Dish name is required", exception.getMessage());
     }
 
     @Test
@@ -127,9 +133,15 @@ class DishTest {
                 null, "Pizza", null, "Desc", "url", DishCategory.MAIN_COURSE
         );
 
-        assertThrows(
-                InvalidDishPriceException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 () -> new Dish(info, 1L, 1L)
+        );
+
+        assertEquals(ErrorCode.INVALID_DISH, exception.getErrorCode());
+        assertEquals(
+                "Dish price must be greater than zero",
+                exception.getMessage()
         );
     }
 
@@ -139,9 +151,15 @@ class DishTest {
                 null, "Pizza", 0, "Desc", "url", DishCategory.MAIN_COURSE
         );
 
-        assertThrows(
-                InvalidDishPriceException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 () -> new Dish(info, 1L, 1L)
+        );
+
+        assertEquals(ErrorCode.INVALID_DISH, exception.getErrorCode());
+        assertEquals(
+                "Dish price must be greater than zero",
+                exception.getMessage()
         );
     }
 
@@ -151,10 +169,13 @@ class DishTest {
                 null, "Pizza", 25000, null, "url", DishCategory.MAIN_COURSE
         );
 
-        assertThrows(
-                InvalidDishDescriptionException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 () -> new Dish(info, 1L, 1L)
         );
+
+        assertEquals(ErrorCode.INVALID_DISH, exception.getErrorCode());
+        assertEquals("Dish description is required", exception.getMessage());
     }
 
     @Test
@@ -163,10 +184,13 @@ class DishTest {
                 null, "Pizza", 25000, "Desc", null, DishCategory.MAIN_COURSE
         );
 
-        assertThrows(
-                InvalidDishImageException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 () -> new Dish(info, 1L, 1L)
         );
+
+        assertEquals(ErrorCode.INVALID_DISH, exception.getErrorCode());
+        assertEquals("Dish image URL is required", exception.getMessage());
     }
 
     @Test
@@ -175,10 +199,13 @@ class DishTest {
                 null, "Pizza", 25000, "Desc", "url", null
         );
 
-        assertThrows(
-                InvalidDishCategoryException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 () -> new Dish(info, 1L, 1L)
         );
+
+        assertEquals(ErrorCode.INVALID_DISH, exception.getErrorCode());
+        assertEquals("Dish category is required", exception.getMessage());
     }
 
     @Test
@@ -196,9 +223,15 @@ class DishTest {
         Dish dish = buildValidDish();
         dish.setPrice(0);
 
-        assertThrows(
-                InvalidDishPriceException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 dish::validateForUpdate
+        );
+
+        assertEquals(ErrorCode.INVALID_DISH, exception.getErrorCode());
+        assertEquals(
+                "Dish price must be greater than zero",
+                exception.getMessage()
         );
     }
 
@@ -207,9 +240,15 @@ class DishTest {
         Dish dish = buildValidDish();
         dish.setDescription(" ");
 
-        assertThrows(
-                InvalidDishDescriptionException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 dish::validateForUpdate
+        );
+
+        assertEquals(ErrorCode.INVALID_DISH, exception.getErrorCode());
+        assertEquals(
+                "Dish description is required",
+                exception.getMessage()
         );
     }
 
@@ -218,9 +257,15 @@ class DishTest {
         Dish dish = new Dish();
         dish.setRestaurantId(null);
 
-        assertThrows(
-                InvalidRestaurantIdException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 dish::validateRestaurantId
+        );
+
+        assertEquals(ErrorCode.INVALID_DISH, exception.getErrorCode());
+        assertEquals(
+                "Restaurant ID is required and must be greater than zero",
+                exception.getMessage()
         );
     }
     @Test
@@ -228,9 +273,15 @@ class DishTest {
         Dish dish = new Dish();
         dish.setRestaurantId(0L);
 
-        assertThrows(
-                InvalidRestaurantIdException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 dish::validateRestaurantId
+        );
+
+        assertEquals(ErrorCode.INVALID_DISH, exception.getErrorCode());
+        assertEquals(
+                "Restaurant ID is required and must be greater than zero",
+                exception.getMessage()
         );
     }
     @Test
@@ -238,9 +289,15 @@ class DishTest {
         Dish dish = new Dish();
         dish.setRestaurantId(-10L);
 
-        assertThrows(
-                InvalidRestaurantIdException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 dish::validateRestaurantId
+        );
+
+        assertEquals(ErrorCode.INVALID_DISH, exception.getErrorCode());
+        assertEquals(
+                "Restaurant ID is required and must be greater than zero",
+                exception.getMessage()
         );
     }
 }

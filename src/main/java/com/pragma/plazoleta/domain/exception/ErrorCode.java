@@ -1,0 +1,10 @@
+package com.pragma.plazoleta.domain.exception;
+
+public enum ErrorCode {
+    INVALID_DISH,
+    INVALID_RESTAURANT,
+    INVALID_EMPLOYEE,
+    DATA_NOT_FOUND,
+    FORBIDDEN,
+    UNAUTHORIZED
+}

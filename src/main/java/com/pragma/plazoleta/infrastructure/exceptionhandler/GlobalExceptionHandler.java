@@ -8,30 +8,28 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(UserNotRolException.class)
-    public ResponseEntity<ErrorResponse> handleUserNotOwner(
-            UserNotRolException ex
-    ) {
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity<ErrorResponse> handleDomainException(DomainException ex) {
+
+        HttpStatus status = mapStatus(ex.getErrorCode());
+
         return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(new ErrorResponse(ex.getMessage()));
+                .status(status)
+                .body(new ErrorResponse(
+                        ex.getErrorCode().name(),
+                        ex.getMessage()
+                ));
     }
 
-    @ExceptionHandler(RestaurantOwnershipException.class)
-    public ResponseEntity<ErrorResponse> handleRestaurantOwnership(
-            RestaurantOwnershipException ex
-    ) {
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(new ErrorResponse(ex.getMessage()));
-    }
-
-    @ExceptionHandler(DataNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFound(
-            DataNotFoundException ex
-    ){
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(ex.getMessage()));
+    private HttpStatus mapStatus(ErrorCode errorCode) {
+        return switch (errorCode) {
+            case DATA_NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case UNAUTHORIZED -> HttpStatus.UNAUTHORIZED;
+            case FORBIDDEN -> HttpStatus.FORBIDDEN;
+            case INVALID_DISH,
+                 INVALID_EMPLOYEE,
+                 INVALID_RESTAURANT -> HttpStatus.BAD_REQUEST;
+            default -> HttpStatus.INTERNAL_SERVER_ERROR;
+        };
     }
 }

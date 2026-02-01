@@ -1,7 +1,8 @@
 package com.pragma.plazoleta.domain.usecase;
 
 
-import com.pragma.plazoleta.domain.exception.UserNotRolException;
+import com.pragma.plazoleta.domain.exception.DomainException;
+import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.domain.model.Rol;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
@@ -44,10 +45,17 @@ public class RestaurantUseCaseTest {
         Long userId = 2L;
         String rol = Rol.PROPIETARIO.name();
 
-        assertThrows(
-                UserNotRolException.class,
+        DomainException exception = assertThrows(
+                DomainException.class,
                 () -> restaurantUseCase.saveRestaurant(restaurant, userId, rol)
         );
+
+        assertEquals(ErrorCode.UNAUTHORIZED, exception.getErrorCode());
+        assertEquals(
+                "Only a admin can create dishes",
+                exception.getMessage()
+        );
+
 
         verifyNoInteractions(restaurantPersistencePort);
     }

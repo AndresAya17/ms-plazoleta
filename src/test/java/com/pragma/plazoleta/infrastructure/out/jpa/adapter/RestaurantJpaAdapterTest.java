@@ -1,6 +1,5 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
-import com.pragma.plazoleta.domain.exception.DataNotFoundException;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.RestaurantEntity;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IRestaurantEntityMapper;
@@ -71,7 +70,6 @@ public class RestaurantJpaAdapterTest {
     }
     @Test
     void shouldFindRestaurantByIdAndReturnMappedRestaurant() {
-        // arrange
         Long restaurantId = 1L;
 
         RestaurantEntity entityFound = new RestaurantEntity();
@@ -89,19 +87,18 @@ public class RestaurantJpaAdapterTest {
                 .thenReturn(mappedRestaurant);
 
         // act
-        Restaurant result = restaurantJpaAdapter.findById(restaurantId);
+        Optional<Restaurant> result = restaurantJpaAdapter.findById(restaurantId);
 
         // assert
-        assertNotNull(result);
-        assertEquals(restaurantId, result.getId());
-        assertEquals("Restaurante Test", result.getName());
+        assertTrue(result.isPresent());
+
+        Restaurant restaurant = result.get();
+        assertEquals(restaurantId, restaurant.getId());
+        assertEquals("Restaurante Test", restaurant.getName());
 
         verify(restaurantRepository, times(1)).findById(restaurantId);
         verify(restaurantEntityMapper, times(1)).toRestaurant(entityFound);
-        verifyNoMoreInteractions(
-                restaurantRepository,
-                restaurantEntityMapper
-        );
+        verifyNoMoreInteractions(restaurantRepository, restaurantEntityMapper);
     }
 
 }

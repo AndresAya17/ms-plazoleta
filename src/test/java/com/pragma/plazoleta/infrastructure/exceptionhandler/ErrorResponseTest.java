@@ -6,14 +6,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ErrorResponseTest {
     @Test
     void shouldCreateErrorResponseWithMessage() {
-        // arrange
+        String expectedErrorCode = "INVALID_DISH";
         String expectedMessage = "Invalid request";
 
-        // act
-        ErrorResponse errorResponse = new ErrorResponse(expectedMessage);
+        ErrorResponse errorResponse =
+                new ErrorResponse(expectedErrorCode, expectedMessage);
 
-        // assert
         assertThat(errorResponse).isNotNull();
+        assertThat(errorResponse.getErrorCode()).isEqualTo(expectedErrorCode);
         assertThat(errorResponse.getMessage()).isEqualTo(expectedMessage);
     }
 }

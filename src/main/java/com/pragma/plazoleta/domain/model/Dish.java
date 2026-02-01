@@ -57,37 +57,37 @@ public class Dish {
 
     public void validateName() {
         if (name == null || name.trim().isEmpty()) {
-            throw new InvalidDishNameException();
+            throw new DomainException(ErrorCode.INVALID_DISH, "Dish name is required");
         }
     }
 
     public void validatePrice() {
         if (price == null || price <= 0) {
-            throw new InvalidDishPriceException();
+            throw new DomainException(ErrorCode.INVALID_DISH, "Dish price must be greater than zero");
         }
     }
 
     public void validateDescription() {
         if (description == null || description.trim().isEmpty()) {
-            throw new InvalidDishDescriptionException();
+            throw new DomainException(ErrorCode.INVALID_DISH, "Dish description is required");
         }
     }
 
     public void validateImageUrl() {
         if (imageUrl == null || imageUrl.trim().isEmpty()) {
-            throw new InvalidDishImageException();
+            throw new DomainException(ErrorCode.INVALID_DISH, "Dish image URL is required");
         }
     }
 
     public void validateCategory() {
         if (category == null) {
-            throw new InvalidDishCategoryException();
+            throw new DomainException(ErrorCode.INVALID_DISH, "Dish category is required");
         }
     }
 
     public void validateRestaurantId() {
         if (restaurantId == null || restaurantId <= 0) {
-            throw new InvalidRestaurantIdException();
+            throw new DomainException(ErrorCode.INVALID_DISH, "Restaurant ID is required and must be greater than zero");
         }
     }
 
