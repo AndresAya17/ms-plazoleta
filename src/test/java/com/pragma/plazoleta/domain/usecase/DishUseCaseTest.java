@@ -177,6 +177,84 @@ class DishUseCaseTest {
         verify(dishPersistencePort, never()).saveDish(any());
     }
 
+    @Test
+    void shouldThrowUnauthorizedWhenUpdatingDishWithNonOwnerRole() {
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> dishUseCase.updateDish(
+                        10L,
+                        1L,
+                        30000,
+                        "desc",
+                        5L,
+                        Rol.ADMINISTRADOR.name()
+                )
+        );
+
+        assertEquals(ErrorCode.UNAUTHORIZED, exception.getErrorCode());
+        assertEquals(
+                "Only a restaurant owner can create dishes",
+                exception.getMessage()
+        );
+
+        verifyNoInteractions(restaurantPersistencePort, dishPersistencePort);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRestaurantNotFoundDuringUpdate() {
+        when(restaurantPersistencePort.findById(10L))
+                .thenReturn(Optional.empty());
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> dishUseCase.updateDish(
+                        10L,
+                        1L,
+                        30000,
+                        "desc",
+                        5L,
+                        Rol.PROPIETARIO.name()
+                )
+        );
+
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
+        assertEquals("Restaurant not found", exception.getMessage());
+
+        verify(restaurantPersistencePort).findById(10L);
+        verifyNoInteractions(dishPersistencePort);
+    }
+
+    @Test
+    void shouldThrowForbiddenWhenRestaurantDoesNotBelongToOwnerDuringUpdate() {
+        Restaurant restaurant = new Restaurant();
+        restaurant.setId(10L);
+        restaurant.setOwnerId(99L); // dueño distinto
+
+        when(restaurantPersistencePort.findById(10L))
+                .thenReturn(Optional.of(restaurant));
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> dishUseCase.updateDish(
+                        10L,
+                        1L,
+                        30000,
+                        "desc",
+                        5L,
+                        Rol.PROPIETARIO.name()
+                )
+        );
+
+        assertEquals(ErrorCode.FORBIDDEN, exception.getErrorCode());
+        assertEquals(
+                "You are not allowed to create dishes for this restaurant",
+                exception.getMessage()
+        );
+
+        verify(restaurantPersistencePort).findById(10L);
+        verifyNoInteractions(dishPersistencePort);
+    }
+
     private Dish buildDish(Long ownerId, Long restaurantId) {
         Dish.DishInfo info = new Dish.DishInfo(
                 null,
