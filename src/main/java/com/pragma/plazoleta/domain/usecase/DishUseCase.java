@@ -28,7 +28,8 @@ public class DishUseCase implements IDishServicePort {
             throw new UserNotRolException();
         }
 
-        Restaurant restaurant = restaurantPersistencePort.findById(dish.getRestaurantId());
+        Restaurant restaurant = restaurantPersistencePort.findById(dish.getRestaurantId())
+                .orElseThrow(() -> new DataNotFoundException("Restaurant"));
         if (!restaurant.getOwnerId().equals(userId)) {
             throw new RestaurantOwnershipException();
         }
@@ -41,7 +42,8 @@ public class DishUseCase implements IDishServicePort {
         if (!Rol.PROPIETARIO.name().equals(rol)){
             throw new UserNotRolException();
         }
-        Restaurant restaurant = restaurantPersistencePort.findById(restaurantId);
+        Restaurant restaurant = restaurantPersistencePort.findById(restaurantId)
+                .orElseThrow(() -> new DataNotFoundException("Restaurant"));
         if (!restaurant.getOwnerId().equals(userId)) {
             throw new RestaurantOwnershipException();
         }

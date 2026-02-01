@@ -70,7 +70,7 @@ class RestaurantTest {
 
         assertDoesNotThrow(restaurant::validateName);
     }
-    
+
 
     @Test
     void shouldThrowExceptionWhenNitIsInvalid() {

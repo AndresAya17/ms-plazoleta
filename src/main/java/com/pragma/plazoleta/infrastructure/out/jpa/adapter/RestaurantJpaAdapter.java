@@ -8,6 +8,8 @@ import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IRestaurantEntityMappe
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.IRestaurantRepository;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor
 public class RestaurantJpaAdapter implements IRestaurantPersistencePort {
     private final IRestaurantRepository restaurantRepository;
@@ -20,8 +22,9 @@ public class RestaurantJpaAdapter implements IRestaurantPersistencePort {
     }
 
     @Override
-    public Restaurant findById(Long idRestaurant) {
-        RestaurantEntity restaurantEntity = restaurantRepository.findById(idRestaurant).orElseThrow(() -> new DataNotFoundException("restaurant"));
-        return  restaurantEntityMapper.toRestaurant(restaurantEntity);
+    public Optional<Restaurant> findById(Long idRestaurant) {
+        return restaurantRepository.findById(idRestaurant)
+                .map(restaurantEntityMapper::toRestaurant);
+
     }
 }
