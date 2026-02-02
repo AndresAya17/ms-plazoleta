@@ -53,4 +53,21 @@ public class DishUseCase implements IDishServicePort {
         dish.validateForUpdate();
         dishPersistencePort.saveDish(dish);
     }
+
+    @Override
+    public void updateDishStatus(Boolean active, Long userId, String rol, Long dishId) {
+        Dish dish = dishPersistencePort.findById(dishId)
+                .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, "Dish not found"));
+
+        Restaurant restaurant = restaurantPersistencePort.findById(dish.getRestaurantId())
+                .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, "Restaurant not found"));
+        if (!restaurant.getOwnerId().equals(userId)) {
+            throw new DomainException(
+                    ErrorCode.FORBIDDEN,
+                    "You are not allowed to modify dishes of this restaurant"
+            );
+        }
+        dish.setActive(active);
+        dishPersistencePort.saveDish(dish);
+    }
 }

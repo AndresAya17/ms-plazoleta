@@ -2,6 +2,7 @@ package com.pragma.plazoleta.infrastructure.input.rest;
 
 import com.pragma.plazoleta.application.dto.request.DishRequestDto;
 import com.pragma.plazoleta.application.dto.request.UpdateDishRequestDto;
+import com.pragma.plazoleta.application.dto.request.UpdateDishStatusRequestDto;
 import com.pragma.plazoleta.application.handler.IDishHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -40,4 +41,15 @@ public class DishRestController {
         dishHandler.updateDish(updateDishRequestDto, userId, rol);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Void> updateDishStatus(
+            @PathVariable("id") Long dishId,
+            @RequestAttribute("auth.userId") Long userId,
+            @RequestAttribute("auth.rol") String rol,
+            @Valid @RequestBody UpdateDishStatusRequestDto updateDishRequestDto){
+        dishHandler.updateDishStatus(updateDishRequestDto, userId, rol, dishId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 }
