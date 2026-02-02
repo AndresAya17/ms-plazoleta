@@ -255,6 +255,125 @@ class DishUseCaseTest {
         verifyNoInteractions(dishPersistencePort);
     }
 
+    @Test
+    void shouldThrowExceptionWhenDishNotFound1() {
+        // arrange
+        Long dishId = 1L;
+
+        when(dishPersistencePort.findById(dishId))
+                .thenReturn(Optional.empty());
+
+        // act
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> dishUseCase.updateDishStatus(true, 1L, "PROPIETARIO", dishId)
+        );
+
+        // assert
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
+        assertEquals("Dish not found", exception.getMessage());
+
+        verify(dishPersistencePort).findById(dishId);
+        verifyNoMoreInteractions(dishPersistencePort);
+        verifyNoInteractions(restaurantPersistencePort);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRestaurantNotFoundOnUpdateDishStatus() {
+        Long dishId = 1L;
+        Long restaurantId = 10L;
+        Long userId = 5L;
+
+        Dish dish = new Dish();
+        dish.setId(dishId);
+        dish.setRestaurantId(restaurantId);
+
+        when(dishPersistencePort.findById(dishId))
+                .thenReturn(Optional.of(dish));
+
+        when(restaurantPersistencePort.findById(restaurantId))
+                .thenReturn(Optional.empty());
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> dishUseCase.updateDishStatus(true, userId, Rol.PROPIETARIO.name(), dishId)
+        );
+
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
+        assertEquals("Restaurant not found", exception.getMessage());
+
+        verify(dishPersistencePort).findById(dishId);
+        verify(restaurantPersistencePort).findById(restaurantId);
+        verify(dishPersistencePort, never()).saveDish(any());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUserIsNotOwnerOnUpdateDishStatus() {
+        Long dishId = 1L;
+        Long restaurantId = 10L;
+        Long ownerId = 99L;
+        Long userId = 5L;
+
+        Dish dish = new Dish();
+        dish.setId(dishId);
+        dish.setRestaurantId(restaurantId);
+
+        Restaurant restaurant = new Restaurant();
+        restaurant.setId(restaurantId);
+        restaurant.setOwnerId(ownerId);
+
+        when(dishPersistencePort.findById(dishId))
+                .thenReturn(Optional.of(dish));
+
+        when(restaurantPersistencePort.findById(restaurantId))
+                .thenReturn(Optional.of(restaurant));
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> dishUseCase.updateDishStatus(false, userId, Rol.PROPIETARIO.name(), dishId)
+        );
+
+        assertEquals(ErrorCode.FORBIDDEN, exception.getErrorCode());
+        assertEquals(
+                "You are not allowed to modify dishes of this restaurant",
+                exception.getMessage()
+        );
+
+        verify(dishPersistencePort).findById(dishId);
+        verify(restaurantPersistencePort).findById(restaurantId);
+        verify(dishPersistencePort, never()).saveDish(any());
+    }
+
+    @Test
+    void shouldSaveDishEvenWhenStatusIsTheSame() {
+        Long dishId = 1L;
+        Long restaurantId = 10L;
+        Long userId = 5L;
+
+        Dish dish = new Dish();
+        dish.setId(dishId);
+        dish.setRestaurantId(restaurantId);
+        dish.setActive(true); // ya está activo
+
+        Restaurant restaurant = new Restaurant();
+        restaurant.setId(restaurantId);
+        restaurant.setOwnerId(userId);
+
+        when(dishPersistencePort.findById(dishId))
+                .thenReturn(Optional.of(dish));
+
+        when(restaurantPersistencePort.findById(restaurantId))
+                .thenReturn(Optional.of(restaurant));
+
+        dishUseCase.updateDishStatus(true, userId, Rol.PROPIETARIO.name(), dishId);
+
+        assertTrue(dish.isActive());
+
+        verify(dishPersistencePort).findById(dishId);
+        verify(restaurantPersistencePort).findById(restaurantId);
+        verify(dishPersistencePort).saveDish(dish);
+    }
+
     private Dish buildDish(Long ownerId, Long restaurantId) {
         Dish.DishInfo info = new Dish.DishInfo(
                 null,

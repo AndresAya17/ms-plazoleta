@@ -11,7 +11,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RestaurantRequestDtoTest {
+class RestaurantRequestDtoTest {
 
     private Validator validator;
 
@@ -55,7 +55,7 @@ public class RestaurantRequestDtoTest {
         assertFalse(violations.isEmpty());
         assertTrue(
                 violations.stream()
-                        .anyMatch(v -> v.getMessage().equals("El nombre es obligatorio"))
+                        .anyMatch(v -> v.getMessage().equals("Restaurant name is required"))
         );
     }
 
@@ -70,7 +70,7 @@ public class RestaurantRequestDtoTest {
 
         assertTrue(
                 violations.stream()
-                        .anyMatch(v -> v.getMessage().equals("El NIT es obligatorio"))
+                        .anyMatch(v -> v.getMessage().equals("NIT is required"))
         );
     }
 
@@ -85,7 +85,7 @@ public class RestaurantRequestDtoTest {
 
         assertTrue(
                 violations.stream()
-                        .anyMatch(v -> v.getMessage().equals("El NIT debe contener solo números"))
+                        .anyMatch(v -> v.getMessage().equals("NIT must contain only numeric characters"))
         );
     }
 
@@ -100,7 +100,7 @@ public class RestaurantRequestDtoTest {
 
         assertTrue(
                 violations.stream()
-                        .anyMatch(v -> v.getMessage().equals("La dirección es obligatoria"))
+                        .anyMatch(v -> v.getMessage().equals("Address is required"))
         );
     }
 
@@ -115,7 +115,7 @@ public class RestaurantRequestDtoTest {
 
         assertTrue(
                 violations.stream()
-                        .anyMatch(v -> v.getMessage().equals("El teléfono es obligatorio"))
+                        .anyMatch(v -> v.getMessage().equals("Phone number is required"))
         );
     }
 
@@ -130,7 +130,7 @@ public class RestaurantRequestDtoTest {
 
         assertTrue(
                 violations.stream()
-                        .anyMatch(v -> v.getMessage().contains("El teléfono debe ser numérico"))
+                        .anyMatch(v -> v.getMessage().contains("Phone number must be numeric, may start with '+', and must not exceed 13 characters"))
         );
     }
 
@@ -145,7 +145,7 @@ public class RestaurantRequestDtoTest {
 
         assertTrue(
                 violations.stream()
-                        .anyMatch(v -> v.getMessage().equals("La URL del logo es obligatoria"))
+                        .anyMatch(v -> v.getMessage().equals("Logo URL is required"))
         );
     }
 
@@ -160,7 +160,7 @@ public class RestaurantRequestDtoTest {
 
         assertTrue(
                 violations.stream()
-                        .anyMatch(v -> v.getMessage().equals("El id del propietario es obligatorio"))
+                        .anyMatch(v -> v.getMessage().equals("Owner id is required"))
         );
     }
 }
