@@ -1,5 +1,6 @@
 package com.pragma.plazoleta.application.dto.request;
 
+import com.pragma.plazoleta.domain.constants.DomainConstants;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -10,29 +11,29 @@ import lombok.Setter;
 @Setter
 public class RestaurantRequestDto {
 
-    @NotBlank(message = "El nombre es obligatorio")
+    @NotBlank(message = "Restaurant name is required")
     private String name;
 
-    @NotBlank(message = "El NIT es obligatorio")
+    @NotBlank(message = "NIT is required")
     @Pattern(
-            regexp = "\\d+",
-            message = "El NIT debe contener solo números"
+            regexp = DomainConstants.DOCUMENT_NUMBER_REGEX,
+            message = "NIT must contain only numeric characters"
     )
     private String nit;
 
-    @NotBlank(message = "La dirección es obligatoria")
+    @NotBlank(message = "Address is required")
     private String address;
 
-    @NotBlank(message = "El teléfono es obligatorio")
+    @NotBlank(message = "Phone number is required")
     @Pattern(
-            regexp = "^\\+?\\d{1,13}$",
-            message = "El teléfono debe ser numérico, puede iniciar con '+' y tener máximo 13 caracteres"
+            regexp = DomainConstants.PHONE_NUMBER_REGEX,
+            message = "Phone number must be numeric, may start with '+', and must not exceed 13 characters"
     )
     private String phoneNumber;
 
-    @NotBlank(message = "La URL del logo es obligatoria")
+    @NotBlank(message = "Logo URL is required")
     private String logoUrl;
 
-    @NotNull(message = "El id del propietario es obligatorio")
+    @NotNull(message = "Owner id is required")
     private Long ownerId;
 }

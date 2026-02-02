@@ -1,10 +1,15 @@
 package com.pragma.plazoleta.infrastructure.exceptionhandler;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
 public class ErrorResponse {
-    private String message;
+    private final String errorCode;
+    private final String message;
+
+    public ErrorResponse(String errorCode, String message) {
+        this.errorCode = errorCode;
+        this.message = message;
+    }
+
 }

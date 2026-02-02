@@ -1,7 +1,14 @@
 package com.pragma.plazoleta.domain.exception;
 
-public abstract class DomainException extends RuntimeException{
-    protected DomainException(String message) {
+import lombok.Getter;
+
+@Getter
+public class DomainException extends RuntimeException{
+    private final ErrorCode errorCode;
+
+    public DomainException(ErrorCode errorCode, String message) {
         super(message);
+        this.errorCode = errorCode;
     }
+
 }

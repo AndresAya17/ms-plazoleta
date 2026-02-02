@@ -34,7 +34,7 @@ public class RestaurantRestControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private static final String BASE_URL = "/api/v1/plazoleta/restaurant";
+    private static final String BASE_URL = "/api/v1/plazoleta/restaurant/";
 
     @Test
     void shouldReturn201WhenRestaurantIsCreated() throws Exception {
