@@ -3,7 +3,7 @@ package com.pragma.plazoleta.infrastructure.exceptionhandler;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-public class ErrorResponseTest {
+class ErrorResponseTest {
     @Test
     void shouldCreateErrorResponseWithMessage() {
         String expectedErrorCode = "INVALID_DISH";

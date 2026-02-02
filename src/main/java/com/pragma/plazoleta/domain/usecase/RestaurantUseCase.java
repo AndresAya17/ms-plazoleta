@@ -53,7 +53,8 @@ public class RestaurantUseCase implements IRestaurantServicePort {
                         employee.getDocumentNumber(),
                         employee.getPhoneNumber(),
                         employee.getEmail(),
-                        employee.getPassword()
+                        employee.getPassword(),
+                        rol
                 );
 
         Long employeeUserId = userServicePort.createEmployee(employeeUserRequestDto);

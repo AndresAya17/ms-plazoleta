@@ -1,6 +1,5 @@
 package com.pragma.plazoleta.infrastructure.exceptionhandler;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
@@ -13,11 +12,4 @@ public class ErrorResponse {
         this.message = message;
     }
 
-    public String getErrorCode() {
-        return errorCode;
-    }
-
-    public String getMessage() {
-        return message;
-    }
 }

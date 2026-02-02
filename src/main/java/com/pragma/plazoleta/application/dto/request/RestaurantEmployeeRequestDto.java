@@ -1,5 +1,6 @@
 package com.pragma.plazoleta.application.dto.request;
 
+import com.pragma.plazoleta.domain.constants.DomainConstants;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -25,14 +26,14 @@ public class RestaurantEmployeeRequestDto {
 
     @NotBlank(message = "Identity document is required")
     @Pattern(
-            regexp = "^[0-9]+$",
+            regexp = DomainConstants.DOCUMENT_NUMBER_REGEX,
             message = "Identity document must contain only numbers"
     )
     private String documentNumber;
 
     @NotBlank(message = "Phone number is required")
     @Pattern(
-            regexp = "^\\+?[0-9]{7,13}$",
+            regexp = DomainConstants.PHONE_NUMBER_REGEX,
             message = "Phone number must be numeric and contain between 7 and 13 digits"
     )
     private String phoneNumber;
