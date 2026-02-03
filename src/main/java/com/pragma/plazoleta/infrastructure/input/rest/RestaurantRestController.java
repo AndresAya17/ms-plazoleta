@@ -2,6 +2,7 @@ package com.pragma.plazoleta.infrastructure.input.rest;
 
 import com.pragma.plazoleta.application.dto.request.RestaurantEmployeeRequestDto;
 import com.pragma.plazoleta.application.dto.request.RestaurantRequestDto;
+import com.pragma.plazoleta.application.dto.response.RestaurantListResponseDto;
 import com.pragma.plazoleta.application.handler.IRestaurantHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -12,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/plazoleta/restaurant")
 @RequiredArgsConstructor
@@ -19,7 +22,11 @@ public class RestaurantRestController {
 
     private final IRestaurantHandler restaurantHandler;
 
-    @Operation(summary = "add restaurant")
+    @Operation(
+            summary = "Create restaurant",
+            description = "Allows an ADMINISTRADOR to create a new restaurant in the system. " +
+                    "The owner must already exist and have the PROPIETARIO role."
+    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Restaurant created"),
             @ApiResponse(responseCode = "400", description = "Invalid data"),
@@ -35,6 +42,17 @@ public class RestaurantRestController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @Operation(
+            summary = "Create restaurant employee",
+            description = "Allows a restaurant owner to create an employee associated with their restaurant."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Employee created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid employee data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "User does not have PROPIETARIO role"),
+            @ApiResponse(responseCode = "404", description = "Restaurant not found")
+    })
     @PostMapping("/{id}/employees")
     public ResponseEntity<Void> saveEmployee(
             @PathVariable("id") Long restaurantId,
@@ -43,6 +61,27 @@ public class RestaurantRestController {
             @Valid @RequestBody RestaurantEmployeeRequestDto restaurantRequestDto) {
         restaurantHandler.saveRestaurantEmployee(restaurantRequestDto, userId, rol, restaurantId);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @Operation(
+            summary = "List restaurants",
+            description = "Returns a paginated and alphabetically ordered list of available restaurants. " +
+                    "Only name and logo URL are returned. Accessible by CLIENTE role."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Restaurants retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "User does not have CLIENTE role")
+    })
+    @GetMapping("/restaurants")
+    public ResponseEntity<List<RestaurantListResponseDto>> listRestaurants(
+            @RequestAttribute("auth.rol") String rol,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(
+                restaurantHandler.listRestaurants(page, size, rol)
+        );
     }
 
 
