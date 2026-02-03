@@ -11,6 +11,8 @@ import com.pragma.plazoleta.domain.model.Rol;
 import com.pragma.plazoleta.domain.spi.IEmployeeRestaurantPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
 
+import java.util.List;
+
 public class RestaurantUseCase implements IRestaurantServicePort {
 
     private final IRestaurantPersistencePort restaurantPersistencePort;
@@ -62,5 +64,13 @@ public class RestaurantUseCase implements IRestaurantServicePort {
         employeeRestaurantPersistencePort.save(
                 new EmployeeRestaurant(employeeUserId, employee.getRestaurantId())
         );
+    }
+
+    @Override
+    public List<Restaurant> listRestaurants(int page, int size, String rol) {
+        if (!rol.equals(Rol.CLIENTE.name())) {
+            throw new DomainException(ErrorCode.UNAUTHORIZED, "Only clients can list restaurants");
+        }
+        return restaurantPersistencePort.listRestaurants(page, size);
     }
 }

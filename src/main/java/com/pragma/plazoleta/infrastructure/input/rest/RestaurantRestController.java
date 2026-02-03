@@ -2,6 +2,7 @@ package com.pragma.plazoleta.infrastructure.input.rest;
 
 import com.pragma.plazoleta.application.dto.request.RestaurantEmployeeRequestDto;
 import com.pragma.plazoleta.application.dto.request.RestaurantRequestDto;
+import com.pragma.plazoleta.application.dto.response.RestaurantListResponseDto;
 import com.pragma.plazoleta.application.handler.IRestaurantHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/plazoleta/restaurant")
@@ -43,6 +46,17 @@ public class RestaurantRestController {
             @Valid @RequestBody RestaurantEmployeeRequestDto restaurantRequestDto) {
         restaurantHandler.saveRestaurantEmployee(restaurantRequestDto, userId, rol, restaurantId);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @GetMapping("/restaurants")
+    public ResponseEntity<List<RestaurantListResponseDto>> listRestaurants(
+            @RequestAttribute("auth.rol") String rol,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(
+                restaurantHandler.listRestaurants(page, size, rol)
+        );
     }
 
 

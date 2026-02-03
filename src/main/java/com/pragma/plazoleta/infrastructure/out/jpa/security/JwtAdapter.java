@@ -11,7 +11,7 @@ import java.util.Date;
 @Component
 public class JwtAdapter implements IJwtPersistencePort {
 
-    private final String secret = "pragma-ms-usuarios-super-secret-key-256-bits!!"; // luego a env
+    private final String secret = "pragma-ms-usuarios-super-secret-key-256-bits!!";
     private final long expirationMs = 3600000;
 
     @Override
