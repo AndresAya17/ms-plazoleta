@@ -3,8 +3,8 @@ package com.pragma.plazoleta.infrastructure.input.rest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pragma.plazoleta.application.dto.request.DishRequestDto;
 import com.pragma.plazoleta.application.dto.request.UpdateDishRequestDto;
+import com.pragma.plazoleta.application.dto.request.UpdateDishStatusRequestDto;
 import com.pragma.plazoleta.application.handler.IDishHandler;
-import com.pragma.plazoleta.application.handler.IRestaurantHandler;
 import com.pragma.plazoleta.domain.model.DishCategory;
 import com.pragma.plazoleta.domain.spi.IJwtPersistencePort;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(DishRestController.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class DishRestControllerTest {
+class DishRestControllerTest {
 
     private static final String DISH_URL = "/api/v1/plazoleta/dish/";
 
@@ -111,6 +111,32 @@ public class DishRestControllerTest {
                 eq(userId),
                 eq(rol)
         );
+    }
+    @Test
+    void shouldUpdateDishStatus() throws Exception {
+        Long dishId = 5L;
+        Long userId = 1L;
+        String rol = "PROPIETARIO";
+
+        UpdateDishStatusRequestDto requestDto = new UpdateDishStatusRequestDto();
+        requestDto.setActive(true);
+
+        mockMvc.perform(
+                        patch("/api/v1/plazoleta/dish/{id}/status", dishId)
+                                .requestAttr("auth.userId", userId)
+                                .requestAttr("auth.rol", rol)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(requestDto))
+                )
+                .andExpect(status().isOk());
+
+        verify(dishHandler)
+                .updateDishStatus(
+                        any(UpdateDishStatusRequestDto.class),
+                        eq(userId),
+                        eq(rol),
+                        eq(dishId)
+                );
     }
 
 
