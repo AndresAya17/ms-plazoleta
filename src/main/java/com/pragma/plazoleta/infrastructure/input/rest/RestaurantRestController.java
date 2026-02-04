@@ -87,6 +87,18 @@ public class RestaurantRestController {
         );
     }
 
+    @Operation(
+            summary = "List dishes by restaurant",
+            description = "Returns a paginated list of active dishes for a given restaurant. " +
+                    "Dishes can be optionally filtered by category. " +
+                    "Accessible only by users with CLIENTE role."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Dishes retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - missing or invalid authentication"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - user does not have CLIENTE role"),
+            @ApiResponse(responseCode = "404", description = "Restaurant not found")
+    })
     @GetMapping("/{id}/dishes")
     public ResponseEntity<PageResponseDto<DishResponseDto>> listDish(
             @PathVariable("id") Long restaurantId,
