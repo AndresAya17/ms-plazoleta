@@ -2,6 +2,7 @@ package com.pragma.plazoleta.application.handler;
 
 import com.pragma.plazoleta.application.dto.request.DishRequestDto;
 import com.pragma.plazoleta.application.dto.request.UpdateDishRequestDto;
+import com.pragma.plazoleta.application.dto.request.UpdateDishStatusRequestDto;
 import com.pragma.plazoleta.application.handler.impl.DishHandler;
 import com.pragma.plazoleta.application.mapper.IDishRequestMapper;
 import com.pragma.plazoleta.domain.api.IDishServicePort;
@@ -17,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class DishHandlerTest {
+class DishHandlerTest {
     @Mock
     private DishUseCase dishUseCase;
 
@@ -30,7 +31,6 @@ public class DishHandlerTest {
 
     @Test
     void shouldSaveDishSuccessfully() {
-        // arrange
         Long userId = 5L;
         String rol = "PROPIETARIO";
 
@@ -59,10 +59,8 @@ public class DishHandlerTest {
 
         when(dishRequestMapper.toDish(requestDto)).thenReturn(dish);
 
-        // act
         dishHandler.saveDish(requestDto, userId, rol);
 
-        // assert
         verify(dishRequestMapper).toDish(requestDto);
         verify(dishUseCase).saveDish(dish, userId, rol);
         verifyNoMoreInteractions(dishUseCase, dishRequestMapper);
@@ -70,7 +68,6 @@ public class DishHandlerTest {
 
     @Test
     void shouldUpdateDishSuccessfully() {
-        // arrange
         Long userId = 5L;
         String rol = "PROPIETARIO";
 
@@ -80,10 +77,8 @@ public class DishHandlerTest {
         dto.setPrice(30000);
         dto.setDescription("Updated description");
 
-        // act
         dishHandler.updateDish(dto, userId, rol);
 
-        // assert
         verify(dishUseCase).updateDish(
                 10L,
                 1L,
@@ -92,6 +87,21 @@ public class DishHandlerTest {
                 userId,
                 rol
         );
+
+        verifyNoMoreInteractions(dishUseCase);
+    }
+
+    @Test
+    void shouldUpdateDishStatus(){
+        Long userId = 5L;
+        String rol = "PROPIETARIO";
+        Long dishId = 1L;
+        UpdateDishStatusRequestDto dto = new UpdateDishStatusRequestDto();
+        dto.setActive(true);
+
+        dishHandler.updateDishStatus(dto,userId,rol,dishId);
+
+        verify(dishUseCase).updateDishStatus(true,5L,"PROPIETARIO",1L);
 
         verifyNoMoreInteractions(dishUseCase);
     }

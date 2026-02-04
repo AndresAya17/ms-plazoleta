@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 public class IDishEntityMapperTest {
 
     private final IDishEntityMapper mapper =
@@ -16,7 +17,6 @@ public class IDishEntityMapperTest {
 
     @Test
     void shouldMapDishToDishEntity() {
-        // arrange
         Dish dish = new Dish();
         dish.setId(1L);
         dish.setName("Pasta");
@@ -24,10 +24,8 @@ public class IDishEntityMapperTest {
         dish.setDescription("Pasta artesanal");
         dish.setCategory(DishCategory.MAIN_COURSE);
 
-        // act
         DishEntity entity = mapper.toEntity(dish);
 
-        // assert
         assertThat(entity).isNotNull();
         assertThat(entity.getId()).isEqualTo(1L);
         assertThat(entity.getName()).isEqualTo("Pasta");
@@ -37,7 +35,6 @@ public class IDishEntityMapperTest {
     }
     @Test
     void shouldMapDishEntityToDish() {
-        // arrange
         DishEntity entity = new DishEntity();
         entity.setId(2L);
         entity.setName("Postre");
@@ -45,10 +42,8 @@ public class IDishEntityMapperTest {
         entity.setDescription("Cheesecake");
         entity.setDishCategory(DishCategory.DESSERT);
 
-        // act
         Dish dish = mapper.toDish(entity);
 
-        // assert
         assertThat(dish).isNotNull();
         assertThat(dish.getId()).isEqualTo(2L);
         assertThat(dish.getName()).isEqualTo("Postre");

@@ -2,15 +2,13 @@ package com.pragma.plazoleta.domain.usecase;
 
 import com.pragma.plazoleta.domain.exception.DomainException;
 import com.pragma.plazoleta.domain.exception.ErrorCode;
-import com.pragma.plazoleta.domain.model.Dish;
-import com.pragma.plazoleta.domain.model.DishCategory;
-import com.pragma.plazoleta.domain.model.Restaurant;
-import com.pragma.plazoleta.domain.model.Rol;
+import com.pragma.plazoleta.domain.model.*;
 import com.pragma.plazoleta.domain.spi.IDishPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -353,7 +351,7 @@ class DishUseCaseTest {
         Dish dish = new Dish();
         dish.setId(dishId);
         dish.setRestaurantId(restaurantId);
-        dish.setActive(true); // ya está activo
+        dish.setActive(true);
 
         Restaurant restaurant = new Restaurant();
         restaurant.setId(restaurantId);
@@ -372,6 +370,96 @@ class DishUseCaseTest {
         verify(dishPersistencePort).findById(dishId);
         verify(restaurantPersistencePort).findById(restaurantId);
         verify(dishPersistencePort).saveDish(dish);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRoleIsNotClient() {
+        // act & assert
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> dishUseCase.listDishesByRestaurant(
+                        1L,
+                        DishCategory.STARTER,
+                        0,
+                        10,
+                        Rol.PROPIETARIO.name()
+                )
+        );
+
+        assertEquals(ErrorCode.UNAUTHORIZED, exception.getErrorCode());
+
+        verifyNoInteractions(restaurantPersistencePort);
+        verifyNoInteractions(dishPersistencePort);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRestaurantNotFound() {
+        // arrange
+        Long restaurantId = 1L;
+
+        when(restaurantPersistencePort.findById(restaurantId))
+                .thenReturn(Optional.empty());
+
+        // act & assert
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> dishUseCase.listDishesByRestaurant(
+                        restaurantId,
+                        DishCategory.STARTER,
+                        0,
+                        10,
+                        Rol.CLIENTE.name()
+                )
+        );
+
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
+
+        verify(restaurantPersistencePort).findById(restaurantId);
+        verifyNoInteractions(dishPersistencePort);
+    }
+    @Test
+    void shouldReturnDishesWhenRoleIsClientAndRestaurantExists() {
+        Long restaurantId = 1L;
+        DishCategory category = DishCategory.STARTER;
+        int page = 0;
+        int size = 10;
+
+        Restaurant restaurant = new Restaurant();
+        restaurant.setId(restaurantId);
+
+        PageResult<Dish> pageResult =
+                new PageResult<>(
+                        List.of(new Dish()),
+                        page,
+                        size,
+                        1L
+                );
+
+        when(restaurantPersistencePort.findById(restaurantId))
+                .thenReturn(Optional.of(restaurant));
+
+        when(dishPersistencePort.findByRestaurant(
+                restaurantId,
+                category,
+                page,
+                size
+        )).thenReturn(pageResult);
+
+        PageResult<Dish> result =
+                dishUseCase.listDishesByRestaurant(
+                        restaurantId,
+                        category,
+                        page,
+                        size,
+                        Rol.CLIENTE.name()
+                );
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+
+        verify(restaurantPersistencePort).findById(restaurantId);
+        verify(dishPersistencePort)
+                .findByRestaurant(restaurantId, category, page, size);
     }
 
     private Dish buildDish(Long ownerId, Long restaurantId) {
