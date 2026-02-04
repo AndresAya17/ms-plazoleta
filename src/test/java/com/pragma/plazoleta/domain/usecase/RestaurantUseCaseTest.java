@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -173,6 +174,38 @@ class RestaurantUseCaseTest {
         verify(restaurantPersistencePort)
                 .findById(employee.getRestaurantId());
     }
+
+    @Test
+    void shouldThrowUnauthorizedWhenRoleIsNotClient() {
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> restaurantUseCase.listRestaurants(
+                        0,
+                        10,
+                        Rol.PROPIETARIO.name()
+                )
+        );
+
+        assertEquals(ErrorCode.UNAUTHORIZED, exception.getErrorCode());
+        verifyNoInteractions(restaurantPersistencePort);
+    }
+
+    @Test
+    void shouldListRestaurantsWhenRoleIsClient() {
+        List<Restaurant> restaurants = List.of(new Restaurant());
+
+        when(restaurantPersistencePort.listRestaurants(0, 10))
+                .thenReturn(restaurants);
+
+        List<Restaurant> result =
+                restaurantUseCase.listRestaurants(0, 10, Rol.CLIENTE.name());
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+
+        verify(restaurantPersistencePort).listRestaurants(0, 10);
+    }
+
 
     private EmployeeForRestaurantCommand buildValidEmployee() {
         return new EmployeeForRestaurantCommand(

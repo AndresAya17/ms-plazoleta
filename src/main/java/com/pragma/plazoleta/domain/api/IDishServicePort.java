@@ -1,9 +1,12 @@
 package com.pragma.plazoleta.domain.api;
 
 import com.pragma.plazoleta.domain.model.Dish;
+import com.pragma.plazoleta.domain.model.DishCategory;
+import com.pragma.plazoleta.domain.model.PageResult;
 
 public interface IDishServicePort {
     void saveDish(Dish dish, Long userId, String rol);
     void updateDish(Long restaurantId,Long id, Integer price, String description, Long userId, String rol);
     void updateDishStatus(Boolean active, Long userId, String rol, Long dishId);
+    PageResult<Dish> listDishesByRestaurant(Long restaurantId, DishCategory category, int page, int size, String rol);
 }

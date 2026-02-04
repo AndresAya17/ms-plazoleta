@@ -3,14 +3,17 @@ package com.pragma.plazoleta.application.handler;
 
 import com.pragma.plazoleta.application.dto.request.RestaurantEmployeeRequestDto;
 import com.pragma.plazoleta.application.dto.request.RestaurantRequestDto;
+import com.pragma.plazoleta.application.dto.response.DishResponseDto;
+import com.pragma.plazoleta.application.dto.response.PageResponseDto;
 import com.pragma.plazoleta.application.dto.response.RestaurantListResponseDto;
 import com.pragma.plazoleta.application.handler.impl.RestaurantHandler;
 import com.pragma.plazoleta.application.mapper.IEmployeeRestaurantRequestMapper;
 import com.pragma.plazoleta.application.mapper.IRestaurantListResponseMapper;
 import com.pragma.plazoleta.application.mapper.IRestaurantRequestMapper;
+import com.pragma.plazoleta.application.mapper.IRestaurantResponseMapper;
+import com.pragma.plazoleta.domain.api.IDishServicePort;
 import com.pragma.plazoleta.domain.api.IRestaurantServicePort;
-import com.pragma.plazoleta.domain.model.EmployeeForRestaurantCommand;
-import com.pragma.plazoleta.domain.model.Restaurant;
+import com.pragma.plazoleta.domain.model.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,6 +33,9 @@ class RestaurantHandlerTest {
     private IRestaurantServicePort restaurantServicePort;
 
     @Mock
+    private IDishServicePort dishServicePort;
+
+    @Mock
     private IRestaurantRequestMapper restaurantRequestMapper;
 
     @Mock
@@ -37,6 +43,9 @@ class RestaurantHandlerTest {
 
     @Mock
     private IRestaurantListResponseMapper restaurantListResponseMapper;
+
+    @Mock
+    private IRestaurantResponseMapper restaurantResponseMapper;
 
     @InjectMocks
     private RestaurantHandler restaurantHandler;
@@ -126,4 +135,84 @@ class RestaurantHandlerTest {
         verify(restaurantListResponseMapper, times(1))
                 .toResponse(restaurant);
     }
+
+    @Test
+    void shouldListDishesByRestaurantAndMapResponse() {
+        int page = 0;
+        int size = 10;
+        String rol = "CLIENTE";
+        Long restaurantId = 1L;
+        DishCategory category = DishCategory.STARTER;
+
+        Dish dish = new Dish();
+
+        PageResult<Dish> pageResult =
+                new PageResult<>(
+                        List.of(dish),
+                        page,
+                        size,
+                        1L
+                );
+
+        DishResponseDto dishResponseDto =
+                new DishResponseDto(
+                        "Pizza",
+                        25000,
+                        "Pizza artesanal",
+                        "https://image",
+                        DishCategory.STARTER
+                );
+
+        PageResponseDto<DishResponseDto> responsePage =
+                new PageResponseDto<>(
+                        List.of(dishResponseDto),
+                        page,
+                        size,
+                        1L,
+                        1
+                );
+
+        when(dishServicePort.listDishesByRestaurant(
+                restaurantId,
+                category,
+                page,
+                size,
+                rol
+        )).thenReturn(pageResult);
+
+        when(restaurantResponseMapper.toResponsePage(pageResult))
+                .thenReturn(responsePage);
+
+        // act
+        PageResponseDto<DishResponseDto> result =
+                restaurantHandler.listDish(
+                        page,
+                        size,
+                        rol,
+                        restaurantId,
+                        category
+                );
+
+        // assert
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        assertEquals("Pizza", result.getContent().get(0).getName());
+        assertEquals(25000, result.getContent().get(0).getPrice());
+        assertEquals(DishCategory.STARTER, result.getContent().get(0).getCategory());
+
+        verify(dishServicePort, times(1))
+                .listDishesByRestaurant(
+                        restaurantId,
+                        category,
+                        page,
+                        size,
+                        rol
+                );
+
+        verify(restaurantResponseMapper, times(1))
+                .toResponsePage(pageResult);
+
+        verifyNoMoreInteractions(dishServicePort, restaurantResponseMapper);
+    }
+
 }

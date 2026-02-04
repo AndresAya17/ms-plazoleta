@@ -2,9 +2,7 @@ package com.pragma.plazoleta.domain.usecase;
 
 import com.pragma.plazoleta.domain.api.IDishServicePort;
 import com.pragma.plazoleta.domain.exception.*;
-import com.pragma.plazoleta.domain.model.Dish;
-import com.pragma.plazoleta.domain.model.Restaurant;
-import com.pragma.plazoleta.domain.model.Rol;
+import com.pragma.plazoleta.domain.model.*;
 import com.pragma.plazoleta.domain.spi.IDishPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
 
@@ -12,6 +10,7 @@ public class DishUseCase implements IDishServicePort {
 
     private final IDishPersistencePort dishPersistencePort;
     private final IRestaurantPersistencePort restaurantPersistencePort;
+    private static final String FOUNDATION = "Restaurant not found";
 
     public DishUseCase(IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort){
         this.dishPersistencePort = dishPersistencePort;
@@ -27,7 +26,7 @@ public class DishUseCase implements IDishServicePort {
         }
 
         Restaurant restaurant = restaurantPersistencePort.findById(dish.getRestaurantId())
-                .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, "Restaurant not found"));
+                .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, FOUNDATION));
         if (!restaurant.getOwnerId().equals(userId)) {
             throw new DomainException(ErrorCode.FORBIDDEN, "You are not allowed to create dishes for this restaurant");
         }
@@ -41,7 +40,7 @@ public class DishUseCase implements IDishServicePort {
             throw new DomainException(ErrorCode.UNAUTHORIZED, "Only a restaurant owner can create dishes");
         }
         Restaurant restaurant = restaurantPersistencePort.findById(restaurantId)
-                .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, "Restaurant not found"));
+                .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, FOUNDATION));
         if (!restaurant.getOwnerId().equals(userId)) {
             throw new DomainException(ErrorCode.FORBIDDEN, "You are not allowed to create dishes for this restaurant");
         }
@@ -60,7 +59,7 @@ public class DishUseCase implements IDishServicePort {
                 .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, "Dish not found"));
 
         Restaurant restaurant = restaurantPersistencePort.findById(dish.getRestaurantId())
-                .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, "Restaurant not found"));
+                .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, FOUNDATION));
         if (!restaurant.getOwnerId().equals(userId)) {
             throw new DomainException(
                     ErrorCode.FORBIDDEN,
@@ -69,5 +68,17 @@ public class DishUseCase implements IDishServicePort {
         }
         dish.setActive(active);
         dishPersistencePort.saveDish(dish);
+    }
+
+    @Override
+    public PageResult<Dish> listDishesByRestaurant(Long restaurantId, DishCategory category, int page, int size, String rol) {
+        if (!rol.equals(Rol.CLIENTE.name())) {
+            throw new DomainException(ErrorCode.UNAUTHORIZED, "Only clients can list restaurants");
+        }
+        restaurantPersistencePort.findById(restaurantId)
+                .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, FOUNDATION));
+
+        return dishPersistencePort.findByRestaurant(restaurantId, category, page, size
+        );
     }
 }

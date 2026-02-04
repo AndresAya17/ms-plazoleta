@@ -2,8 +2,11 @@ package com.pragma.plazoleta.infrastructure.input.rest;
 
 import com.pragma.plazoleta.application.dto.request.RestaurantEmployeeRequestDto;
 import com.pragma.plazoleta.application.dto.request.RestaurantRequestDto;
+import com.pragma.plazoleta.application.dto.response.DishResponseDto;
+import com.pragma.plazoleta.application.dto.response.PageResponseDto;
 import com.pragma.plazoleta.application.dto.response.RestaurantListResponseDto;
 import com.pragma.plazoleta.application.handler.IRestaurantHandler;
+import com.pragma.plazoleta.domain.model.DishCategory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -81,6 +84,31 @@ public class RestaurantRestController {
     ) {
         return ResponseEntity.ok(
                 restaurantHandler.listRestaurants(page, size, rol)
+        );
+    }
+
+    @Operation(
+            summary = "List dishes by restaurant",
+            description = "Returns a paginated list of active dishes for a given restaurant. " +
+                    "Dishes can be optionally filtered by category. " +
+                    "Accessible only by users with CLIENTE role."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Dishes retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - missing or invalid authentication"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - user does not have CLIENTE role"),
+            @ApiResponse(responseCode = "404", description = "Restaurant not found")
+    })
+    @GetMapping("/{id}/dishes")
+    public ResponseEntity<PageResponseDto<DishResponseDto>> listDish(
+            @PathVariable("id") Long restaurantId,
+            @RequestAttribute("auth.rol") String rol,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) DishCategory category
+    ) {
+        return ResponseEntity.ok(
+                restaurantHandler.listDish(page, size, rol, restaurantId, category)
         );
     }
 
