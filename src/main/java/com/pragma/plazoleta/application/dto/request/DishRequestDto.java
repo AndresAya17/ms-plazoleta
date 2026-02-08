@@ -1,6 +1,5 @@
 package com.pragma.plazoleta.application.dto.request;
 
-import com.pragma.plazoleta.domain.model.DishCategory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -25,7 +24,7 @@ public class DishRequestDto {
     private String imageUrl;
 
     @NotNull(message = "The dish category is required")
-    private DishCategory category;
+    private Long category;
 
     @NotNull(message = "The restaurant id is required")
     private Long restaurantId;

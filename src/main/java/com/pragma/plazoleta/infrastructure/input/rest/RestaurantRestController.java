@@ -6,7 +6,6 @@ import com.pragma.plazoleta.application.dto.response.DishResponseDto;
 import com.pragma.plazoleta.application.dto.response.PageResponseDto;
 import com.pragma.plazoleta.application.dto.response.RestaurantListResponseDto;
 import com.pragma.plazoleta.application.handler.IRestaurantHandler;
-import com.pragma.plazoleta.domain.model.DishCategory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -105,10 +104,10 @@ public class RestaurantRestController {
             @RequestAttribute("auth.rol") String rol,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) DishCategory category
+            @RequestParam(required = false) Long categoryId
     ) {
         return ResponseEntity.ok(
-                restaurantHandler.listDish(page, size, rol, restaurantId, category)
+                restaurantHandler.listDish(page, size, rol, restaurantId, categoryId)
         );
     }
 

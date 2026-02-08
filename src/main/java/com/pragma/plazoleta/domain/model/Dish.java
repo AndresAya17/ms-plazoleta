@@ -14,10 +14,9 @@ public class Dish {
     private Integer price;
     private String description;
     private String imageUrl;
-    private DishCategory category;
+    private Category category;
     private boolean active;
     private Long restaurantId;
-    private Long ownerId;
 
     public record DishInfo(
             Long id,
@@ -25,11 +24,11 @@ public class Dish {
             Integer price,
             String description,
             String imageUrl,
-            DishCategory category
+            Category category
     ) {}
 
 
-    public Dish(DishInfo info, Long restaurantId, Long ownerId) {
+    public Dish(DishInfo info, Long restaurantId) {
         this.id = info.id;
         this.name = info.name;
         this.price = info.price;
@@ -37,7 +36,6 @@ public class Dish {
         this.imageUrl = info.imageUrl;
         this.category = info.category;
         this.restaurantId = restaurantId;
-        this.ownerId = ownerId;
         this.active = true;
         validate();
     }

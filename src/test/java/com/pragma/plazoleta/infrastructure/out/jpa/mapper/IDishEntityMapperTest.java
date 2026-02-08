@@ -3,7 +3,6 @@ package com.pragma.plazoleta.infrastructure.out.jpa.mapper;
 
 import com.pragma.plazoleta.domain.model.Dish;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.DishEntity;
-import com.pragma.plazoleta.domain.model.DishCategory;
 
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;

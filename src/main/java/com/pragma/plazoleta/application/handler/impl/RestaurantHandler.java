@@ -53,11 +53,10 @@ public class RestaurantHandler implements IRestaurantHandler {
     }
 
     @Override
-    public PageResponseDto<DishResponseDto> listDish(int page, int size, String rol, Long restaurantId, DishCategory category) {
+    public PageResponseDto<DishResponseDto> listDish(int page, int size, String rol, Long restaurantId, Long categoryId) {
         PageResult<Dish> result =
                 dishServicePort.listDishesByRestaurant(
-                        restaurantId, category, page, size, rol
-                );
+                        restaurantId, page, size, rol, categoryId);
         return restaurantResponseMapper.toResponsePage(result);
     }
 

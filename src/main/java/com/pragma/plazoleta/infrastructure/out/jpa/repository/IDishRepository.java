@@ -1,6 +1,5 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.repository;
 
-import com.pragma.plazoleta.domain.model.DishCategory;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.DishEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,9 +11,9 @@ public interface IDishRepository extends JpaRepository<DishEntity, Long> {
             Pageable pageable
     );
 
-    Page<DishEntity> findByRestaurantIdAndDishCategoryAndActiveTrue(
+    Page<DishEntity> findByRestaurantIdAndCategory_IdAndActiveTrue(
             Long restaurantId,
-            DishCategory category,
+            Long category,
             Pageable pageable
     );
 }

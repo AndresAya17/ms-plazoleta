@@ -1,7 +1,6 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
 import com.pragma.plazoleta.domain.model.Dish;
-import com.pragma.plazoleta.domain.model.DishCategory;
 import com.pragma.plazoleta.domain.model.PageResult;
 import com.pragma.plazoleta.domain.spi.IDishPersistencePort;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.DishEntity;
@@ -34,20 +33,20 @@ public class DishJpaAdapter implements IDishPersistencePort {
     }
 
     @Override
-    public PageResult<Dish> findByRestaurant(Long restaurantId, DishCategory category, int page, int size) {
+    public PageResult<Dish> findByRestaurant(Long restaurantId, int page, int size, Long categoryId) {
         Pageable pageable = PageRequest.of(page, size);
 
         Page<DishEntity> dishPage;
 
-        if (category == null) {
+        if (categoryId == null) {
             dishPage = dishRepository.findByRestaurantIdAndActiveTrue(
                     restaurantId,
                     pageable
             );
         } else {
-            dishPage = dishRepository.findByRestaurantIdAndDishCategoryAndActiveTrue(
+            dishPage = dishRepository.findByRestaurantIdAndCategory_IdAndActiveTrue(
                     restaurantId,
-                    category,
+                    categoryId,
                     pageable
             );
         }

@@ -2,7 +2,6 @@ package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
 
 import com.pragma.plazoleta.domain.model.Dish;
-import com.pragma.plazoleta.domain.model.DishCategory;
 import com.pragma.plazoleta.domain.model.PageResult;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.DishEntity;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IDishEntityMapper;

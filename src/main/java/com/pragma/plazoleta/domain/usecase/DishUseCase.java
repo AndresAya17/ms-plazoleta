@@ -71,14 +71,13 @@ public class DishUseCase implements IDishServicePort {
     }
 
     @Override
-    public PageResult<Dish> listDishesByRestaurant(Long restaurantId, DishCategory category, int page, int size, String rol) {
+    public PageResult<Dish> listDishesByRestaurant(Long restaurantId, int page, int size, String rol, Long categoryId) {
         if (!rol.equals(Rol.CLIENTE.name())) {
             throw new DomainException(ErrorCode.UNAUTHORIZED, "Only clients can list restaurants");
         }
         restaurantPersistencePort.findById(restaurantId)
                 .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, FOUNDATION));
 
-        return dishPersistencePort.findByRestaurant(restaurantId, category, page, size
-        );
+        return dishPersistencePort.findByRestaurant(restaurantId, page, size, categoryId);
     }
 }

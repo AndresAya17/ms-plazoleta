@@ -1,6 +1,5 @@
 package com.pragma.plazoleta.application.dto.response;
 
-import com.pragma.plazoleta.domain.model.DishCategory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,5 +12,5 @@ public class DishResponseDto {
     private Integer price;
     private String description;
     private String imageUrl;
-    private DishCategory category;
+    private Long categoryId;
 }
