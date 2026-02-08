@@ -5,6 +5,7 @@ import com.pragma.plazoleta.domain.exception.*;
 import com.pragma.plazoleta.domain.model.*;
 import com.pragma.plazoleta.domain.spi.IDishPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
+import com.pragma.plazoleta.domain.validator.DishDomainValidator;
 
 public class DishUseCase implements IDishServicePort {
 
@@ -20,7 +21,7 @@ public class DishUseCase implements IDishServicePort {
     @Override
     public void saveDish(Dish dish, Long userId, String rol) {
 
-        dish.validate();
+        DishDomainValidator.validateForUpdate(dish);
         if (!Rol.PROPIETARIO.name().equals(rol)){
             throw new DomainException(ErrorCode.UNAUTHORIZED, "Only a restaurant owner can create dishes");
         }
@@ -49,7 +50,7 @@ public class DishUseCase implements IDishServicePort {
                 .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, "Dish not found"));
         dish.setPrice(price);
         dish.setDescription(description);
-        dish.validateForUpdate();
+        DishDomainValidator.validateForUpdate(dish);
         dishPersistencePort.saveDish(dish);
     }
 

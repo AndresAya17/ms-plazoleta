@@ -1,6 +1,5 @@
 package com.pragma.plazoleta.infrastructure.input.rest;
 
-import com.pragma.plazoleta.application.dto.request.RestaurantEmployeeRequestDto;
 import com.pragma.plazoleta.application.dto.request.RestaurantRequestDto;
 import com.pragma.plazoleta.application.dto.response.DishResponseDto;
 import com.pragma.plazoleta.application.dto.response.PageResponseDto;
@@ -44,26 +43,6 @@ public class RestaurantRestController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @Operation(
-            summary = "Create restaurant employee",
-            description = "Allows a restaurant owner to create an employee associated with their restaurant."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Employee created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid employee data"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "403", description = "User does not have PROPIETARIO role"),
-            @ApiResponse(responseCode = "404", description = "Restaurant not found")
-    })
-    @PostMapping("/{id}/employees")
-    public ResponseEntity<Void> saveEmployee(
-            @PathVariable("id") Long restaurantId,
-            @RequestAttribute("auth.userId") Long userId,
-            @RequestAttribute("auth.rol") String rol,
-            @Valid @RequestBody RestaurantEmployeeRequestDto restaurantRequestDto) {
-        restaurantHandler.saveRestaurantEmployee(restaurantRequestDto, userId, rol, restaurantId);
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
 
     @Operation(
             summary = "List restaurants",
