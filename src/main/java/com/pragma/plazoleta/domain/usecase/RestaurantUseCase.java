@@ -13,28 +13,18 @@ import java.util.List;
 public class RestaurantUseCase implements IRestaurantServicePort {
 
     private final IRestaurantPersistencePort restaurantPersistencePort;
-    private final IUserPersistencePort userServicePort;
-    private final IEmployeeRestaurantPersistencePort employeeRestaurantPersistencePort;
 
-    public RestaurantUseCase(IRestaurantPersistencePort restaurantPersistencePort, IUserPersistencePort userServicePort, IEmployeeRestaurantPersistencePort employeeRestaurantPersistencePort){
+    public RestaurantUseCase(IRestaurantPersistencePort restaurantPersistencePort){
         this.restaurantPersistencePort = restaurantPersistencePort;
-        this.userServicePort = userServicePort;
-        this.employeeRestaurantPersistencePort = employeeRestaurantPersistencePort;
     }
 
     @Override
-    public void saveRestaurant(Restaurant restaurant, Long userId, String rol) {
-        if (!Rol.ADMINISTRADOR.name().equals(rol)){
-            throw new DomainException(ErrorCode.UNAUTHORIZED, "Only a admin can create dishes");
-        }
+    public void saveRestaurant(Restaurant restaurant) {
         restaurantPersistencePort.saveRestaurant(restaurant);
     }
 
     @Override
-    public List<Restaurant> listRestaurants(int page, int size, String rol) {
-        if (!rol.equals(Rol.CLIENTE.name())) {
-            throw new DomainException(ErrorCode.UNAUTHORIZED, "Only clients can list restaurants");
-        }
+    public List<Restaurant> listRestaurants(int page, int size) {
         return restaurantPersistencePort.listRestaurants(page, size);
     }
 }

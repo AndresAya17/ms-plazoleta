@@ -1,9 +1,11 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.entity;
 
 import jakarta.persistence.*;
+import lombok.Setter;
 
 @Entity
 @Table(name = "category")
+@Setter
 public class CategoryEntity {
 
     @Id

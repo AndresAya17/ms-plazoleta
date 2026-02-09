@@ -8,7 +8,7 @@ import com.pragma.plazoleta.application.dto.response.RestaurantListResponseDto;
 import java.util.List;
 
 public interface IRestaurantHandler {
-    void saveRestaurant(RestaurantRequestDto restaurantRequestDto, Long userId, String rol);
-    List<RestaurantListResponseDto> listRestaurants(int page, int size, String rol);
-    PageResponseDto<DishResponseDto> listDish(int page, int size, String rol, Long restaurantId, Long categoryId);
+    void saveRestaurant(RestaurantRequestDto restaurantRequestDto);
+    List<RestaurantListResponseDto> listRestaurants(int page, int size);
+    PageResponseDto<DishResponseDto> listDish(int page, int size, Long restaurantId, Long categoryId);
 }

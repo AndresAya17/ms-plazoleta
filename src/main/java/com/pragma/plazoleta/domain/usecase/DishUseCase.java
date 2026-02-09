@@ -19,27 +19,20 @@ public class DishUseCase implements IDishServicePort {
     }
 
     @Override
-    public void saveDish(Dish dish, Long userId, String rol) {
-
-        DishDomainValidator.validateForUpdate(dish);
-        if (!Rol.PROPIETARIO.name().equals(rol)){
-            throw new DomainException(ErrorCode.UNAUTHORIZED, "Only a restaurant owner can create dishes");
-        }
-
+    public void saveDish(Dish dish, Long userId) {
+        DishDomainValidator.validate(dish);
         Restaurant restaurant = restaurantPersistencePort.findById(dish.getRestaurantId())
                 .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, FOUNDATION));
         if (!restaurant.getOwnerId().equals(userId)) {
             throw new DomainException(ErrorCode.FORBIDDEN, "You are not allowed to create dishes for this restaurant");
         }
+        dish.setActive(true);
         dishPersistencePort.saveDish(dish);
 
     }
 
     @Override
-    public void updateDish(Long restaurantId, Long dishId, Integer price, String description, Long userId, String rol) {
-        if (!Rol.PROPIETARIO.name().equals(rol)){
-            throw new DomainException(ErrorCode.UNAUTHORIZED, "Only a restaurant owner can create dishes");
-        }
+    public void updateDish(Long restaurantId, Long dishId, Integer price, String description, Long userId) {
         Restaurant restaurant = restaurantPersistencePort.findById(restaurantId)
                 .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, FOUNDATION));
         if (!restaurant.getOwnerId().equals(userId)) {
@@ -55,7 +48,7 @@ public class DishUseCase implements IDishServicePort {
     }
 
     @Override
-    public void updateDishStatus(Boolean active, Long userId, String rol, Long dishId) {
+    public void updateDishStatus(Boolean active, Long userId, Long dishId) {
         Dish dish = dishPersistencePort.findById(dishId)
                 .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, "Dish not found"));
 
@@ -72,10 +65,7 @@ public class DishUseCase implements IDishServicePort {
     }
 
     @Override
-    public PageResult<Dish> listDishesByRestaurant(Long restaurantId, int page, int size, String rol, Long categoryId) {
-        if (!rol.equals(Rol.CLIENTE.name())) {
-            throw new DomainException(ErrorCode.UNAUTHORIZED, "Only clients can list restaurants");
-        }
+    public PageResult<Dish> listDishesByRestaurant(Long restaurantId, int page, int size, Long categoryId) {
         restaurantPersistencePort.findById(restaurantId)
                 .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, FOUNDATION));
 

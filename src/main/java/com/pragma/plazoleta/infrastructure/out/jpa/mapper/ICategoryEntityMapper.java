@@ -10,6 +10,16 @@ import org.mapstruct.ReportingPolicy;
         unmappedSourcePolicy = ReportingPolicy.IGNORE
 )
 public interface ICategoryEntityMapper {
+
+    default CategoryEntity toEntity(Long id) {
+        if (id == null) {
+            return null;
+        }
+        CategoryEntity entity = new CategoryEntity();
+        entity.setId(id);
+        return entity;
+    }
+    
     CategoryEntity toEntity(Category category);
 
     Category toDomain(CategoryEntity categoryEntity);

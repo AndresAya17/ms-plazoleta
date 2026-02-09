@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,12 +35,11 @@ public class RestaurantRestController {
             @ApiResponse(responseCode = "403", description = "User is not owner"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/")
     public ResponseEntity<Void> saveRestaurant(
-            @RequestAttribute("auth.userId") Long userId,
-            @RequestAttribute("auth.rol") String rol,
             @Valid @RequestBody RestaurantRequestDto restaurantRequestDto) {
-        restaurantHandler.saveRestaurant(restaurantRequestDto, userId, rol);
+        restaurantHandler.saveRestaurant(restaurantRequestDto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -54,14 +54,14 @@ public class RestaurantRestController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "User does not have CLIENTE role")
     })
+    @PreAuthorize("hasAuthority('CLIENT')")
     @GetMapping("/restaurants")
     public ResponseEntity<List<RestaurantListResponseDto>> listRestaurants(
-            @RequestAttribute("auth.rol") String rol,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         return ResponseEntity.ok(
-                restaurantHandler.listRestaurants(page, size, rol)
+                restaurantHandler.listRestaurants(page, size)
         );
     }
 
@@ -74,19 +74,19 @@ public class RestaurantRestController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Dishes retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized - missing or invalid authentication"),
-            @ApiResponse(responseCode = "403", description = "Forbidden - user does not have CLIENTE role"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - user does not have CLIENT role"),
             @ApiResponse(responseCode = "404", description = "Restaurant not found")
     })
+    @PreAuthorize("hasAuthority('CLIENT')")
     @GetMapping("/{id}/dishes")
     public ResponseEntity<PageResponseDto<DishResponseDto>> listDish(
             @PathVariable("id") Long restaurantId,
-            @RequestAttribute("auth.rol") String rol,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) Long categoryId
     ) {
         return ResponseEntity.ok(
-                restaurantHandler.listDish(page, size, rol, restaurantId, categoryId)
+                restaurantHandler.listDish(page, size, restaurantId, categoryId)
         );
     }
 

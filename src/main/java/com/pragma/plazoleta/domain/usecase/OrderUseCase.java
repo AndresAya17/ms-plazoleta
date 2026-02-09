@@ -25,10 +25,7 @@ public class OrderUseCase implements IOrderServicePort {
     }
 
     @Override
-    public Order saveOrder(Order order, Long userId, String rol) {
-        if (!rol.equals(Rol.CLIENTE.name())) {
-            throw new DomainException(ErrorCode.UNAUTHORIZED, "Only clients can list restaurants");
-        }
+    public Order saveOrder(Order order, Long userId) {
         restaurantPersistencePort.findById(order.getRestaurantId())
                 .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, "Restaurant not found"));
         for (OrderItem item : order.getItems()) {

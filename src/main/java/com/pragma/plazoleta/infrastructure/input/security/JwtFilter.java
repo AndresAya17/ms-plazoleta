@@ -47,14 +47,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
 
                 request.setAttribute("auth.userId", userId);
-                request.setAttribute("auth.rol", rol);
 
                 System.out.println(
                         "Request attributes set -> userId=" + userId + ", rol=" + rol
                 );
 
                 List<GrantedAuthority> authorities =
-                        List.of(new SimpleGrantedAuthority("ROLE_" + rol));
+                        List.of(new SimpleGrantedAuthority(rol));
 
                 Authentication authentication =
                         new UsernamePasswordAuthenticationToken(

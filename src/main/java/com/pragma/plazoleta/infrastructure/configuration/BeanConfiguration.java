@@ -42,16 +42,8 @@ public class BeanConfiguration {
     }
 
     @Bean
-    public IRestaurantServicePort restaurantServicePort(
-            IRestaurantPersistencePort restaurantPersistencePort,
-            IUserPersistencePort userServicePort,
-            IEmployeeRestaurantPersistencePort employeeRestaurantPersistencePort
-    ) {
-        return new RestaurantUseCase(
-                restaurantPersistencePort,
-                userServicePort,
-                employeeRestaurantPersistencePort
-        );
+    public IRestaurantServicePort restaurantServicePort(IRestaurantPersistencePort restaurantPersistencePort) {
+        return new RestaurantUseCase(restaurantPersistencePort);
     }
 
     @Bean

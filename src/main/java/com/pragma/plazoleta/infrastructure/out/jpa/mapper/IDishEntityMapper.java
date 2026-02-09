@@ -13,6 +13,7 @@ import org.mapstruct.ReportingPolicy;
 )
 public interface IDishEntityMapper {
 
+    @Mapping(target = "category", source = "category.id")
     DishEntity toEntity(Dish dish);
 
     Dish toDish(DishEntity dishEntity);

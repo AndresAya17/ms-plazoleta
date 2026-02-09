@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -32,12 +33,12 @@ public class DishRestController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasAuthority('OWNER')")
     @PostMapping("/")
     public ResponseEntity<Void> saveDish(
             @RequestAttribute("auth.userId") Long userId,
-            @RequestAttribute("auth.rol") String rol,
             @Valid @RequestBody DishRequestDto dishRequestDto){
-        dishHandler.saveDish(dishRequestDto, userId, rol);
+        dishHandler.saveDish(dishRequestDto, userId);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -54,12 +55,12 @@ public class DishRestController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasAuthority('OWNER')")
     @PatchMapping("/")
     public ResponseEntity<Void> updateDish(
             @RequestAttribute("auth.userId") Long userId,
-            @RequestAttribute("auth.rol") String rol,
             @Valid @RequestBody UpdateDishRequestDto updateDishRequestDto){
-        dishHandler.updateDish(updateDishRequestDto, userId, rol);
+        dishHandler.updateDish(updateDishRequestDto, userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -76,13 +77,13 @@ public class DishRestController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasAuthority('OWNER')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<Void> updateDishStatus(
             @PathVariable("id") Long dishId,
             @RequestAttribute("auth.userId") Long userId,
-            @RequestAttribute("auth.rol") String rol,
             @Valid @RequestBody UpdateDishStatusRequestDto updateDishRequestDto){
-        dishHandler.updateDishStatus(updateDishRequestDto, userId, rol, dishId);
+        dishHandler.updateDishStatus(updateDishRequestDto, userId, dishId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
