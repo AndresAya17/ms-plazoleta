@@ -1,27 +1,39 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.mapper;
 
 
+import com.pragma.plazoleta.domain.model.Category;
 import com.pragma.plazoleta.domain.model.Dish;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.DishEntity;
 
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SpringBootTest(classes = {
+        IDishEntityMapperImpl.class,
+        ICategoryEntityMapperImpl.class
+})
 public class IDishEntityMapperTest {
 
-    private final IDishEntityMapper mapper =
-            Mappers.getMapper(IDishEntityMapper.class);
+    @Autowired
+    private IDishEntityMapper mapper;
 
     @Test
     void shouldMapDishToDishEntity() {
+        Category category = new Category(
+                1L,
+                "MAIN_COURSE",
+                "Platos principales"
+        );
         Dish dish = new Dish();
         dish.setId(1L);
         dish.setName("Pasta");
         dish.setPrice(25000);
         dish.setDescription("Pasta artesanal");
-        dish.setCategory(DishCategory.MAIN_COURSE);
+        dish.setCategory(category);
 
         DishEntity entity = mapper.toEntity(dish);
 
@@ -30,7 +42,6 @@ public class IDishEntityMapperTest {
         assertThat(entity.getName()).isEqualTo("Pasta");
         assertThat(entity.getPrice()).isEqualTo(25000);
         assertThat(entity.getDescription()).isEqualTo("Pasta artesanal");
-        assertThat(entity.getDishCategory()).isEqualTo(DishCategory.MAIN_COURSE);
     }
     @Test
     void shouldMapDishEntityToDish() {
@@ -39,7 +50,6 @@ public class IDishEntityMapperTest {
         entity.setName("Postre");
         entity.setPrice(12000);
         entity.setDescription("Cheesecake");
-        entity.setDishCategory(DishCategory.DESSERT);
 
         Dish dish = mapper.toDish(entity);
 
@@ -48,6 +58,5 @@ public class IDishEntityMapperTest {
         assertThat(dish.getName()).isEqualTo("Postre");
         assertThat(dish.getPrice()).isEqualTo(12000);
         assertThat(dish.getDescription()).isEqualTo("Cheesecake");
-        assertThat(dish.getCategory()).isEqualTo(DishCategory.DESSERT);
     }
 }

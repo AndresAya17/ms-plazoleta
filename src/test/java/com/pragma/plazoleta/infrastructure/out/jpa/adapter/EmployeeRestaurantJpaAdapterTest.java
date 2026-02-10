@@ -28,7 +28,7 @@ public class EmployeeRestaurantJpaAdapterTest {
     @Test
     void shouldSaveEmployeeRestaurant() {
         EmployeeRestaurant employeeRestaurant =
-                new EmployeeRestaurant(1L, 10L);
+                new EmployeeRestaurant();
 
         EmployeeRestaurantEntity entity = new EmployeeRestaurantEntity();
         entity.setEmployeeUserId(1L);

@@ -30,44 +30,30 @@ class DishHandlerTest {
     @Test
     void shouldSaveDishSuccessfully() {
         Long userId = 5L;
-        String rol = "PROPIETARIO";
 
         DishRequestDto requestDto = new DishRequestDto();
         requestDto.setName("Pizza");
         requestDto.setPrice(25000);
         requestDto.setDescription("Delicious pizza");
         requestDto.setImageUrl("http://image.com/pizza.jpg");
-        requestDto.setCategory(DishCategory.MAIN_COURSE);
+        requestDto.setCategory(1L);
         requestDto.setRestaurantId(10L);
 
-        Dish.DishInfo dishInfo = new Dish.DishInfo(
-                null,
-                "Pizza",
-                25000,
-                "Delicious pizza",
-                "http://image.com/pizza.jpg",
-                DishCategory.MAIN_COURSE
-        );
+        Dish dish = new Dish();
 
-        Dish dish = new Dish(
-                dishInfo,
-                requestDto.getRestaurantId(),
-                userId
-        );
 
         when(dishRequestMapper.toDish(requestDto)).thenReturn(dish);
 
-        dishHandler.saveDish(requestDto, userId, rol);
+        dishHandler.saveDish(requestDto, userId);
 
         verify(dishRequestMapper).toDish(requestDto);
-        verify(dishUseCase).saveDish(dish, userId, rol);
+        verify(dishUseCase).saveDish(dish, userId);
         verifyNoMoreInteractions(dishUseCase, dishRequestMapper);
     }
 
     @Test
     void shouldUpdateDishSuccessfully() {
         Long userId = 5L;
-        String rol = "PROPIETARIO";
 
         UpdateDishRequestDto dto = new UpdateDishRequestDto();
         dto.setRestaurantId(10L);
@@ -75,15 +61,14 @@ class DishHandlerTest {
         dto.setPrice(30000);
         dto.setDescription("Updated description");
 
-        dishHandler.updateDish(dto, userId, rol);
+        dishHandler.updateDish(dto, userId);
 
         verify(dishUseCase).updateDish(
                 10L,
                 1L,
                 30000,
                 "Updated description",
-                userId,
-                rol
+                userId
         );
 
         verifyNoMoreInteractions(dishUseCase);
@@ -92,14 +77,13 @@ class DishHandlerTest {
     @Test
     void shouldUpdateDishStatus(){
         Long userId = 5L;
-        String rol = "PROPIETARIO";
         Long dishId = 1L;
         UpdateDishStatusRequestDto dto = new UpdateDishStatusRequestDto();
         dto.setActive(true);
 
-        dishHandler.updateDishStatus(dto,userId,rol,dishId);
+        dishHandler.updateDishStatus(dto,userId,dishId);
 
-        verify(dishUseCase).updateDishStatus(true,5L,"PROPIETARIO",1L);
+        verify(dishUseCase).updateDishStatus(true,5L,1L);
 
         verifyNoMoreInteractions(dishUseCase);
     }
