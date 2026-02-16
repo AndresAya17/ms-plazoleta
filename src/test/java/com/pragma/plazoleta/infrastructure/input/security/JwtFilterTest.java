@@ -85,7 +85,6 @@ public class JwtFilterTest {
 
     @Test
     void shouldAuthenticateAndSetRequestAttributesWhenTokenIsValid() throws Exception {
-        // arrange
         String token = "valid-token";
         Long userId = 10L;
         String rol = "OWNER";
@@ -95,25 +94,24 @@ public class JwtFilterTest {
         when(persistencePort.getUserId(token)).thenReturn(userId);
         when(persistencePort.getRol(token)).thenReturn(rol);
 
-        // act
         jwtFilter.doFilter(request, response, filterChain);
 
-        // assert
         verify(persistencePort).validateToken(token);
         verify(persistencePort).getUserId(token);
         verify(persistencePort).getRol(token);
 
         verify(request).setAttribute("auth.userId", userId);
-        verify(request).setAttribute("auth.rol", rol);
 
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
         assertNotNull(authentication);
         assertEquals(userId, authentication.getPrincipal());
-        assertTrue(authentication.getAuthorities()
-                .stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_" + rol)));
+        assertTrue(
+                authentication.getAuthorities()
+                        .stream()
+                        .anyMatch(a -> a.getAuthority().equals(rol))
+        );
 
         verify(filterChain).doFilter(request, response);
     }

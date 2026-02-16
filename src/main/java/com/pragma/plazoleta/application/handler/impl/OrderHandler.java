@@ -22,9 +22,9 @@ public class OrderHandler implements IOrderHandler {
 
 
     @Override
-    public OrderResponseDto saveOrder(CreateOrderRequestDto orderRequestDto, Long userId, String rol) {
+    public OrderResponseDto saveOrder(CreateOrderRequestDto orderRequestDto, Long userId) {
         Order order = requestMapper.toOrder(orderRequestDto);
-        Order orderSaved = orderServicePort.saveOrder(order, userId, rol);
+        Order orderSaved = orderServicePort.saveOrder(order, userId);
         return orderResponseMapper.toResponse(orderSaved);
     }
 }

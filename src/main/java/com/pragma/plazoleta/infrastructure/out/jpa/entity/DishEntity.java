@@ -1,6 +1,5 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.entity;
 
-import com.pragma.plazoleta.domain.model.DishCategory;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,16 +31,13 @@ public class DishEntity {
     @Column(nullable = false)
     private String imageUrl;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private DishCategory dishCategory;
-
     @Column(nullable = false)
     private boolean active;
 
     @Column(nullable = false)
     private Long restaurantId;
 
-    @Column(nullable = false)
-    private Long ownerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private CategoryEntity category;
 }

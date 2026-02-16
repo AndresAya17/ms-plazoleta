@@ -6,10 +6,16 @@ import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IRestaurantEntityMappe
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.IRestaurantRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,7 +34,6 @@ public class RestaurantJpaAdapterTest {
 
     @Test
     void shouldSaveRestaurantAndReturnMappedRestaurant() {
-        // arrange
         Restaurant domainRestaurant = new Restaurant();
         domainRestaurant.setName("Restaurante Test");
 
@@ -52,10 +57,8 @@ public class RestaurantJpaAdapterTest {
         when(restaurantEntityMapper.toRestaurant(savedEntity))
                 .thenReturn(mappedBackRestaurant);
 
-        // act
         Restaurant result = restaurantJpaAdapter.saveRestaurant(domainRestaurant);
 
-        // assert
         assertNotNull(result);
         assertEquals(1L, result.getId());
         assertEquals("Restaurante Test", result.getName());
@@ -86,10 +89,8 @@ public class RestaurantJpaAdapterTest {
         when(restaurantEntityMapper.toRestaurant(entityFound))
                 .thenReturn(mappedRestaurant);
 
-        // act
         Optional<Restaurant> result = restaurantJpaAdapter.findById(restaurantId);
 
-        // assert
         assertTrue(result.isPresent());
 
         Restaurant restaurant = result.get();
@@ -99,6 +100,54 @@ public class RestaurantJpaAdapterTest {
         verify(restaurantRepository, times(1)).findById(restaurantId);
         verify(restaurantEntityMapper, times(1)).toRestaurant(entityFound);
         verifyNoMoreInteractions(restaurantRepository, restaurantEntityMapper);
+    }
+
+    @Test
+    void shouldListRestaurantsOrderedByNameAscending() {
+        int page = 0;
+        int size = 10;
+
+        RestaurantEntity entity = new RestaurantEntity();
+        entity.setId(1L);
+        entity.setName("Restaurante A");
+
+        Restaurant restaurant = new Restaurant();
+        restaurant.setId(1L);
+        restaurant.setName("Restaurante A");
+
+        Page<RestaurantEntity> entityPage =
+                new PageImpl<>(List.of(entity));
+
+        when(restaurantRepository.findAll(any(Pageable.class)))
+                .thenReturn(entityPage);
+
+        when(restaurantEntityMapper.toRestaurant(entity))
+                .thenReturn(restaurant);
+
+        ArgumentCaptor<Pageable> pageableCaptor =
+                ArgumentCaptor.forClass(Pageable.class);
+
+        List<Restaurant> result =
+                restaurantJpaAdapter.listRestaurants(page, size);
+
+        verify(restaurantRepository)
+                .findAll(pageableCaptor.capture());
+
+        Pageable pageableUsed = pageableCaptor.getValue();
+
+        assertEquals(page, pageableUsed.getPageNumber());
+        assertEquals(size, pageableUsed.getPageSize());
+
+        Sort.Order sortOrder =
+                pageableUsed.getSort().getOrderFor("name");
+
+        assertNotNull(sortOrder);
+        assertEquals(Sort.Direction.ASC, sortOrder.getDirection());
+
+        assertEquals(1, result.size());
+        assertEquals("Restaurante A", result.get(0).getName());
+
+        verify(restaurantEntityMapper).toRestaurant(entity);
     }
 
 }

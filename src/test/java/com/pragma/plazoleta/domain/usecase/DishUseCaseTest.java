@@ -5,8 +5,11 @@ import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.*;
 import com.pragma.plazoleta.domain.spi.IDishPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
+import com.pragma.plazoleta.domain.validator.DishDomainValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,31 +34,10 @@ class DishUseCaseTest {
         );
     }
 
-    @Test
-    void shouldThrowUserNotRolExceptionWhenUserIsNotProprietary() {
-        Dish dish = buildDish(5L, 10L);
-
-        DomainException exception = assertThrows(
-                DomainException.class,
-                () -> dishUseCase.saveDish(
-                        dish,
-                        5L,
-                        Rol.ADMINISTRADOR.name()
-                )
-        );
-
-        assertEquals(ErrorCode.UNAUTHORIZED, exception.getErrorCode());
-        assertEquals(
-                "Only a restaurant owner can create dishes",
-                exception.getMessage()
-        );
-
-        verifyNoInteractions(restaurantPersistencePort, dishPersistencePort);
-    }
 
     @Test
     void shouldThrowRestaurantOwnershipExceptionWhenRestaurantDoesNotBelongToOwner() {
-        Dish dish = buildDish(5L, 10L);
+        Dish dish = buildDish(10L);
 
         Restaurant restaurant = new Restaurant();
         restaurant.setId(10L);
@@ -68,8 +50,7 @@ class DishUseCaseTest {
                 DomainException.class,
                 () -> dishUseCase.saveDish(
                         dish,
-                        5L,
-                        Rol.PROPIETARIO.name()
+                        5L
                 )
         );
         assertEquals(ErrorCode.FORBIDDEN, exception.getErrorCode());
@@ -84,7 +65,7 @@ class DishUseCaseTest {
 
     @Test
     void shouldSaveDishSuccessfullyWhenValidOwnerAndRestaurant() {
-        Dish dish = buildDish(5L, 10L);
+        Dish dish = buildDish(10L);
 
         Restaurant restaurant = new Restaurant();
         restaurant.setId(10L);
@@ -93,52 +74,9 @@ class DishUseCaseTest {
         when(restaurantPersistencePort.findById(10L))
                 .thenReturn(Optional.of(restaurant));
 
-        dishUseCase.saveDish(dish, 5L, Rol.PROPIETARIO.name());
+        dishUseCase.saveDish(dish, 5L);
 
         verify(restaurantPersistencePort).findById(10L);
-        verify(dishPersistencePort).saveDish(dish);
-    }
-
-    // ---------- UPDATE DISH ----------
-
-    @Test
-    void shouldUpdateDishSuccessfully() {
-        Long restaurantId = 10L;
-        Long dishId = 1L;
-        Long userId = 5L;
-
-        Dish.DishInfo dishInfo = new Dish.DishInfo(
-                dishId,
-                "Pizza",
-                25000,
-                "Old description",
-                "http://img.com/pizza.png",
-                DishCategory.MAIN_COURSE
-        );
-        Dish dish = new Dish(dishInfo, restaurantId, userId);
-
-        Restaurant restaurant = new Restaurant();
-        restaurant.setId(restaurantId);
-        restaurant.setOwnerId(5L);
-
-        when(restaurantPersistencePort.findById(restaurantId))
-                .thenReturn(Optional.of(restaurant));
-
-        when(dishPersistencePort.findById(dishId))
-                .thenReturn(Optional.of(dish));
-
-        dishUseCase.updateDish(
-                restaurantId,
-                dishId,
-                30000,
-                "Updated description",
-                5L,
-                Rol.PROPIETARIO.name()
-        );
-
-        assertEquals(30000, dish.getPrice());
-        assertEquals("Updated description", dish.getDescription());
-
         verify(dishPersistencePort).saveDish(dish);
     }
 
@@ -164,8 +102,7 @@ class DishUseCaseTest {
                         dishId,
                         30000,
                         "desc",
-                        5L,
-                        Rol.PROPIETARIO.name()
+                        5L
                 )
         );
         assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
@@ -177,25 +114,39 @@ class DishUseCaseTest {
 
     @Test
     void shouldThrowUnauthorizedWhenUpdatingDishWithNonOwnerRole() {
+        Long restaurantId = 10L;
+        Long dishId = 1L;
+        Long userId = 5L;
+        Long ownerId = 99L;
+        Integer price = 30000;
+        String description = "desc";
+
+        Restaurant restaurant = new Restaurant();
+        restaurant.setId(restaurantId);
+        restaurant.setOwnerId(ownerId);
+
+        when(restaurantPersistencePort.findById(restaurantId))
+                .thenReturn(Optional.of(restaurant));
+
         DomainException exception = assertThrows(
                 DomainException.class,
                 () -> dishUseCase.updateDish(
-                        10L,
-                        1L,
-                        30000,
-                        "desc",
-                        5L,
-                        Rol.ADMINISTRADOR.name()
+                        restaurantId,
+                        dishId,
+                        price,
+                        description,
+                        userId
                 )
         );
 
-        assertEquals(ErrorCode.UNAUTHORIZED, exception.getErrorCode());
+        assertEquals(ErrorCode.FORBIDDEN, exception.getErrorCode());
         assertEquals(
-                "Only a restaurant owner can create dishes",
+                "You are not allowed to create dishes for this restaurant",
                 exception.getMessage()
         );
 
-        verifyNoInteractions(restaurantPersistencePort, dishPersistencePort);
+        verify(restaurantPersistencePort).findById(restaurantId);
+        verifyNoInteractions(dishPersistencePort);
     }
 
     @Test
@@ -210,8 +161,7 @@ class DishUseCaseTest {
                         1L,
                         30000,
                         "desc",
-                        5L,
-                        Rol.PROPIETARIO.name()
+                        5L
                 )
         );
 
@@ -238,8 +188,7 @@ class DishUseCaseTest {
                         1L,
                         30000,
                         "desc",
-                        5L,
-                        Rol.PROPIETARIO.name()
+                        5L
                 )
         );
 
@@ -255,19 +204,16 @@ class DishUseCaseTest {
 
     @Test
     void shouldThrowExceptionWhenDishNotFound1() {
-        // arrange
         Long dishId = 1L;
 
         when(dishPersistencePort.findById(dishId))
                 .thenReturn(Optional.empty());
 
-        // act
         DomainException exception = assertThrows(
                 DomainException.class,
-                () -> dishUseCase.updateDishStatus(true, 1L, "PROPIETARIO", dishId)
+                () -> dishUseCase.updateDishStatus(true, 1L, dishId)
         );
 
-        // assert
         assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
         assertEquals("Dish not found", exception.getMessage());
 
@@ -294,7 +240,7 @@ class DishUseCaseTest {
 
         DomainException exception = assertThrows(
                 DomainException.class,
-                () -> dishUseCase.updateDishStatus(true, userId, Rol.PROPIETARIO.name(), dishId)
+                () -> dishUseCase.updateDishStatus(true, userId, dishId)
         );
 
         assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
@@ -328,7 +274,7 @@ class DishUseCaseTest {
 
         DomainException exception = assertThrows(
                 DomainException.class,
-                () -> dishUseCase.updateDishStatus(false, userId, Rol.PROPIETARIO.name(), dishId)
+                () -> dishUseCase.updateDishStatus(false, userId, dishId)
         );
 
         assertEquals(ErrorCode.FORBIDDEN, exception.getErrorCode());
@@ -363,7 +309,7 @@ class DishUseCaseTest {
         when(restaurantPersistencePort.findById(restaurantId))
                 .thenReturn(Optional.of(restaurant));
 
-        dishUseCase.updateDishStatus(true, userId, Rol.PROPIETARIO.name(), dishId);
+        dishUseCase.updateDishStatus(true, userId, dishId);
 
         assertTrue(dish.isActive());
 
@@ -374,41 +320,36 @@ class DishUseCaseTest {
 
     @Test
     void shouldThrowExceptionWhenRoleIsNotClient() {
-        // act & assert
         DomainException exception = assertThrows(
                 DomainException.class,
                 () -> dishUseCase.listDishesByRestaurant(
                         1L,
-                        DishCategory.STARTER,
                         0,
                         10,
-                        Rol.PROPIETARIO.name()
+                        1L
                 )
         );
 
-        assertEquals(ErrorCode.UNAUTHORIZED, exception.getErrorCode());
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
 
-        verifyNoInteractions(restaurantPersistencePort);
+        verify(restaurantPersistencePort).findById(1L);
         verifyNoInteractions(dishPersistencePort);
     }
 
     @Test
     void shouldThrowExceptionWhenRestaurantNotFound() {
-        // arrange
         Long restaurantId = 1L;
 
         when(restaurantPersistencePort.findById(restaurantId))
                 .thenReturn(Optional.empty());
 
-        // act & assert
         DomainException exception = assertThrows(
                 DomainException.class,
                 () -> dishUseCase.listDishesByRestaurant(
                         restaurantId,
-                        DishCategory.STARTER,
                         0,
                         10,
-                        Rol.CLIENTE.name()
+                        1L
                 )
         );
 
@@ -418,18 +359,66 @@ class DishUseCaseTest {
         verifyNoInteractions(dishPersistencePort);
     }
     @Test
-    void shouldReturnDishesWhenRoleIsClientAndRestaurantExists() {
+    void shouldUpdateDishPriceAndDescriptionAndSave() {
+        // given
         Long restaurantId = 1L;
-        DishCategory category = DishCategory.STARTER;
+        Long dishId = 2L;
+        Long userId = 10L;
+        Integer price = 15000;
+        String description = "Updated description";
+
+        Restaurant restaurant = new Restaurant();
+        restaurant.setId(restaurantId);
+        restaurant.setOwnerId(userId);
+
+        Dish dish = new Dish();
+        dish.setId(dishId);
+
+        when(restaurantPersistencePort.findById(restaurantId))
+                .thenReturn(Optional.of(restaurant));
+
+        when(dishPersistencePort.findById(dishId))
+                .thenReturn(Optional.of(dish));
+
+        try (MockedStatic<DishDomainValidator> validator =
+                     Mockito.mockStatic(DishDomainValidator.class)) {
+
+            dishUseCase.updateDish(
+                    restaurantId,
+                    dishId,
+                    price,
+                    description,
+                    userId
+            );
+
+            assertEquals(price, dish.getPrice());
+            assertEquals(description, dish.getDescription());
+
+            validator.verify(() ->
+                    DishDomainValidator.validateForUpdate(dish)
+            );
+
+            verify(dishPersistencePort).saveDish(dish);
+        }
+    }
+
+    @Test
+    void shouldReturnDishesFromPersistencePort() {
+        // given
+        Long restaurantId = 1L;
         int page = 0;
         int size = 10;
+        Long categoryId = 2L;
 
         Restaurant restaurant = new Restaurant();
         restaurant.setId(restaurantId);
 
-        PageResult<Dish> pageResult =
+        Dish dish = new Dish();
+        dish.setId(100L);
+
+        PageResult<Dish> expectedResult =
                 new PageResult<>(
-                        List.of(new Dish()),
+                        List.of(dish),
                         page,
                         size,
                         1L
@@ -440,38 +429,50 @@ class DishUseCaseTest {
 
         when(dishPersistencePort.findByRestaurant(
                 restaurantId,
-                category,
                 page,
-                size
-        )).thenReturn(pageResult);
+                size,
+                categoryId
+        )).thenReturn(expectedResult);
 
+        // when
         PageResult<Dish> result =
                 dishUseCase.listDishesByRestaurant(
                         restaurantId,
-                        category,
                         page,
                         size,
-                        Rol.CLIENTE.name()
+                        categoryId
                 );
 
+        // then
         assertNotNull(result);
-        assertEquals(1, result.getContent().size());
+        assertEquals(expectedResult, result);
 
-        verify(restaurantPersistencePort).findById(restaurantId);
-        verify(dishPersistencePort)
-                .findByRestaurant(restaurantId, category, page, size);
+        verify(dishPersistencePort).findByRestaurant(
+                restaurantId,
+                page,
+                size,
+                categoryId
+        );
     }
 
-    private Dish buildDish(Long ownerId, Long restaurantId) {
-        Dish.DishInfo info = new Dish.DishInfo(
-                null,
-                "Pizza",
-                25000,
-                "Delicious pizza",
-                "http://image.com/pizza.jpg",
-                DishCategory.MAIN_COURSE
+
+    private Dish buildDish(Long restaurantId) {
+        Category category = new Category(
+                1L,
+                "MAIN_COURSE",
+                "Platos principales"
         );
 
-        return new Dish(info, restaurantId, ownerId);
+        Dish dish = new Dish();
+        dish.setId(null);
+        dish.setName("Pizza");
+        dish.setPrice(25000);
+        dish.setDescription("Delicious pizza");
+        dish.setImageUrl("http://image.com/pizza.jpg");
+        dish.setCategory(category);
+        dish.setRestaurantId(restaurantId);
+        dish.setActive(true);
+
+        return dish;
     }
 }

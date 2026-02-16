@@ -1,13 +1,11 @@
 package com.pragma.plazoleta.application.handler;
 
 
-import com.pragma.plazoleta.application.dto.request.RestaurantEmployeeRequestDto;
 import com.pragma.plazoleta.application.dto.request.RestaurantRequestDto;
 import com.pragma.plazoleta.application.dto.response.DishResponseDto;
 import com.pragma.plazoleta.application.dto.response.PageResponseDto;
 import com.pragma.plazoleta.application.dto.response.RestaurantListResponseDto;
 import com.pragma.plazoleta.application.handler.impl.RestaurantHandler;
-import com.pragma.plazoleta.application.mapper.IEmployeeRestaurantRequestMapper;
 import com.pragma.plazoleta.application.mapper.IRestaurantListResponseMapper;
 import com.pragma.plazoleta.application.mapper.IRestaurantRequestMapper;
 import com.pragma.plazoleta.application.mapper.IRestaurantResponseMapper;
@@ -39,9 +37,6 @@ class RestaurantHandlerTest {
     private IRestaurantRequestMapper restaurantRequestMapper;
 
     @Mock
-    private IEmployeeRestaurantRequestMapper employeeRestaurantRequestMapper;
-
-    @Mock
     private IRestaurantListResponseMapper restaurantListResponseMapper;
 
     @Mock
@@ -52,9 +47,6 @@ class RestaurantHandlerTest {
 
     @Test
     void shouldMapDtoAndCallServiceWithUserIdAndRol() {
-        Long userId = 1L;
-        String rol = "ADMINISTRADOR";
-
         RestaurantRequestDto dto = new RestaurantRequestDto();
         dto.setName("Restaurante Test");
 
@@ -63,66 +55,32 @@ class RestaurantHandlerTest {
 
         when(restaurantRequestMapper.toRestaurant(dto)).thenReturn(restaurant);
 
-        restaurantHandler.saveRestaurant(dto, userId, rol);
+        restaurantHandler.saveRestaurant(dto);
 
         verify(restaurantRequestMapper).toRestaurant(dto);
         verify(restaurantServicePort)
-                .saveRestaurant(restaurant, userId, rol);
+                .saveRestaurant(restaurant);
         verifyNoMoreInteractions(restaurantRequestMapper, restaurantServicePort);
-    }
-
-    @Test
-    void shouldSaveRestaurantEmployee() {
-        RestaurantEmployeeRequestDto requestDto = new RestaurantEmployeeRequestDto();
-        Long userId = 1L;
-        Long restaurantId = 10L;
-        String rol = "PROPIETARIO";
-
-        EmployeeForRestaurantCommand command =
-                mock(EmployeeForRestaurantCommand.class);
-
-        when(employeeRestaurantRequestMapper
-                .toEmployee(requestDto, restaurantId, userId))
-                .thenReturn(command);
-
-        restaurantHandler.saveRestaurantEmployee(
-                requestDto,
-                userId,
-                rol,
-                restaurantId
-        );
-
-        verify(employeeRestaurantRequestMapper)
-                .toEmployee(requestDto, restaurantId, userId);
-
-        verify(restaurantServicePort)
-                .saveEmployee(command, rol);
-
-        verifyNoMoreInteractions(
-                employeeRestaurantRequestMapper,
-                restaurantServicePort
-        );
     }
 
     @Test
     void shouldListRestaurantsAndMapToResponse() {
         int page = 0;
         int size = 10;
-        String rol = "CLIENTE";
 
         Restaurant restaurant = new Restaurant();
         RestaurantListResponseDto responseDto = new RestaurantListResponseDto();
         responseDto.setName("Pollos Popeye");
         responseDto.setLogoUrl("https://logopoll");
 
-        when(restaurantServicePort.listRestaurants(page, size, rol))
+        when(restaurantServicePort.listRestaurants(page, size))
                 .thenReturn(List.of(restaurant));
 
         when(restaurantListResponseMapper.toResponse(restaurant))
                 .thenReturn(responseDto);
 
         List<RestaurantListResponseDto> result =
-                restaurantHandler.listRestaurants(page, size, rol);
+                restaurantHandler.listRestaurants(page, size);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -130,7 +88,7 @@ class RestaurantHandlerTest {
         assertEquals("https://logopoll", result.get(0).getLogoUrl());
 
         verify(restaurantServicePort, times(1))
-                .listRestaurants(page, size, rol);
+                .listRestaurants(page, size);
 
         verify(restaurantListResponseMapper, times(1))
                 .toResponse(restaurant);
@@ -140,9 +98,8 @@ class RestaurantHandlerTest {
     void shouldListDishesByRestaurantAndMapResponse() {
         int page = 0;
         int size = 10;
-        String rol = "CLIENTE";
+        Long categoryId = 1L;
         Long restaurantId = 1L;
-        DishCategory category = DishCategory.STARTER;
 
         Dish dish = new Dish();
 
@@ -151,7 +108,7 @@ class RestaurantHandlerTest {
                         List.of(dish),
                         page,
                         size,
-                        1L
+                        categoryId
                 );
 
         DishResponseDto dishResponseDto =
@@ -160,7 +117,7 @@ class RestaurantHandlerTest {
                         25000,
                         "Pizza artesanal",
                         "https://image",
-                        DishCategory.STARTER
+                        categoryId
                 );
 
         PageResponseDto<DishResponseDto> responsePage =
@@ -174,39 +131,33 @@ class RestaurantHandlerTest {
 
         when(dishServicePort.listDishesByRestaurant(
                 restaurantId,
-                category,
                 page,
                 size,
-                rol
+                categoryId
         )).thenReturn(pageResult);
 
         when(restaurantResponseMapper.toResponsePage(pageResult))
                 .thenReturn(responsePage);
 
-        // act
         PageResponseDto<DishResponseDto> result =
                 restaurantHandler.listDish(
                         page,
                         size,
-                        rol,
                         restaurantId,
-                        category
+                        categoryId
                 );
-
-        // assert
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
         assertEquals("Pizza", result.getContent().get(0).getName());
         assertEquals(25000, result.getContent().get(0).getPrice());
-        assertEquals(DishCategory.STARTER, result.getContent().get(0).getCategory());
+        assertEquals(categoryId, result.getContent().get(0).getCategoryId());
 
         verify(dishServicePort, times(1))
                 .listDishesByRestaurant(
                         restaurantId,
-                        category,
                         page,
                         size,
-                        rol
+                        categoryId
                 );
 
         verify(restaurantResponseMapper, times(1))

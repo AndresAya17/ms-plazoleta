@@ -1,8 +1,8 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
 
+import com.pragma.plazoleta.domain.model.Category;
 import com.pragma.plazoleta.domain.model.Dish;
-import com.pragma.plazoleta.domain.model.DishCategory;
 import com.pragma.plazoleta.domain.model.PageResult;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.DishEntity;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IDishEntityMapper;
@@ -17,12 +17,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class DishJpaAdapterTest {
@@ -41,11 +43,16 @@ public class DishJpaAdapterTest {
 
     @Test
     void shouldSaveDishAndReturnDomainDish() {
+        Category category = new Category(
+                1L,
+                "MAIN_COURSE",
+                "Platos principales"
+        );
         Dish dish = new Dish();
         dish.setName("Pasta");
         dish.setPrice(25000);
         dish.setDescription("Pasta artesanal");
-        dish.setCategory(DishCategory.MAIN_COURSE);
+        dish.setCategory(category);
 
         DishEntity dishEntityToSave = new DishEntity();
         dishEntityToSave.setName("Pasta");
@@ -187,9 +194,9 @@ public class DishJpaAdapterTest {
         PageResult<Dish> result =
                 dishJpaAdapter.findByRestaurant(
                         restaurantId,
-                        null,
                         page,
-                        size
+                        size,
+                        null
                 );
 
         assertThat(result).isNotNull();
@@ -207,68 +214,47 @@ public class DishJpaAdapterTest {
     }
 
     @Test
-    void shouldFindDishesByRestaurantWhenCategoryIsProvided() {
+    void shouldFindDishesByRestaurantAndCategoryWhenCategoryIsProvided() {
         Long restaurantId = 1L;
-        DishCategory category = DishCategory.STARTER;
+        Long categoryId = 2L;
         int page = 0;
         int size = 10;
 
-        DishEntity dishEntity = new DishEntity();
-        dishEntity.setId(1L);
-        dishEntity.setName("Pizza");
-        dishEntity.setDishCategory(category);
+        DishEntity entity = new DishEntity();
+        entity.setId(1L);
 
-        Dish dish = new Dish();
-        dish.setId(1L);
-        dish.setName("Pizza");
-        dish.setCategory(category);
-
-        Page<DishEntity> dishEntityPage =
-                new PageImpl<>(
-                        List.of(dishEntity),
-                        PageRequest.of(page, size),
-                        1
-                );
+        Page<DishEntity> entityPage =
+                new PageImpl<>(List.of(entity));
 
         PageResult<Dish> pageResult =
-                new PageResult<>(
-                        List.of(dish),
-                        page,
-                        size,
-                        1L
-                );
+                new PageResult<>(List.of(new Dish()), page, size, 1L);
 
-        when(dishRepository.findByRestaurantIdAndDishCategoryAndActiveTrue(
-                restaurantId,
-                category,
-                PageRequest.of(page, size)
-        )).thenReturn(dishEntityPage);
+        when(dishRepository.findByRestaurantIdAndCategory_IdAndActiveTrue(
+                eq(restaurantId),
+                eq(categoryId),
+                any(Pageable.class)
+        )).thenReturn(entityPage);
 
-        when(dishPageMapper.toDomain(dishEntityPage, dishEntityMapper))
+        when(dishPageMapper.toDomain(entityPage, dishEntityMapper))
                 .thenReturn(pageResult);
 
         PageResult<Dish> result =
-                dishJpaAdapter.findByRestaurant(
-                        restaurantId,
-                        category,
-                        page,
-                        size
-                );
-
-        assertThat(result).isNotNull();
-        assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0).getCategory())
-                .isEqualTo(DishCategory.STARTER);
+                dishJpaAdapter.findByRestaurant(restaurantId, page, size, categoryId);
 
         verify(dishRepository)
-                .findByRestaurantIdAndDishCategoryAndActiveTrue(
-                        restaurantId,
-                        category,
-                        PageRequest.of(page, size)
+                .findByRestaurantIdAndCategory_IdAndActiveTrue(
+                        eq(restaurantId),
+                        eq(categoryId),
+                        any(Pageable.class)
                 );
+
+        verify(dishRepository, never())
+                .findByRestaurantIdAndActiveTrue(any(), any());
+
         verify(dishPageMapper)
-                .toDomain(dishEntityPage, dishEntityMapper);
-        verifyNoMoreInteractions(dishRepository, dishPageMapper);
+                .toDomain(entityPage, dishEntityMapper);
+
+        assertEquals(1, result.getContent().size());
     }
 
 

@@ -1,13 +1,10 @@
 package com.pragma.plazoleta.domain.usecase;
 
-import com.pragma.plazoleta.application.dto.request.EmployeeUserRequestDto;
 import com.pragma.plazoleta.domain.api.IRestaurantServicePort;
-import com.pragma.plazoleta.domain.exception.*;
-import com.pragma.plazoleta.domain.spi.IUserPersistencePort;
-import com.pragma.plazoleta.domain.model.EmployeeForRestaurantCommand;
+import com.pragma.plazoleta.domain.exception.DomainException;
+import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.EmployeeRestaurant;
 import com.pragma.plazoleta.domain.model.Restaurant;
-import com.pragma.plazoleta.domain.model.Rol;
 import com.pragma.plazoleta.domain.spi.IEmployeeRestaurantPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
 
@@ -16,61 +13,36 @@ import java.util.List;
 public class RestaurantUseCase implements IRestaurantServicePort {
 
     private final IRestaurantPersistencePort restaurantPersistencePort;
-    private final IUserPersistencePort userServicePort;
     private final IEmployeeRestaurantPersistencePort employeeRestaurantPersistencePort;
 
-    public RestaurantUseCase(IRestaurantPersistencePort restaurantPersistencePort, IUserPersistencePort userServicePort, IEmployeeRestaurantPersistencePort employeeRestaurantPersistencePort){
+    public RestaurantUseCase(IRestaurantPersistencePort restaurantPersistencePort, IEmployeeRestaurantPersistencePort employeeRestaurantPersistencePort){
         this.restaurantPersistencePort = restaurantPersistencePort;
-        this.userServicePort = userServicePort;
         this.employeeRestaurantPersistencePort = employeeRestaurantPersistencePort;
     }
 
     @Override
-    public void saveRestaurant(Restaurant restaurant, Long userId, String rol) {
-        if (!Rol.ADMINISTRADOR.name().equals(rol)){
-            throw new DomainException(ErrorCode.UNAUTHORIZED, "Only a admin can create dishes");
-        }
+    public void saveRestaurant(Restaurant restaurant) {
         restaurantPersistencePort.saveRestaurant(restaurant);
     }
 
     @Override
-    public void saveEmployee(EmployeeForRestaurantCommand employee, String rol) {
-        employee.validateEmployee();
-        if (!rol.equals(Rol.PROPIETARIO.name())) {
-            throw new DomainException(ErrorCode.UNAUTHORIZED, "Only a restaurant owner can create employees");
-        }
-
-        Restaurant restaurant = restaurantPersistencePort
-                .findById(employee.getRestaurantId())
-                .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, "Restaurant not found"));
-
-        if (!restaurant.getOwnerId().equals(employee.getOwnerId())) {
-            throw new DomainException(ErrorCode.FORBIDDEN, "User role is not authorized to create employees");
-        }
-
-        EmployeeUserRequestDto employeeUserRequestDto =
-                new EmployeeUserRequestDto(
-                        employee.getFirstName(),
-                        employee.getLastName(),
-                        employee.getDocumentNumber(),
-                        employee.getPhoneNumber(),
-                        employee.getEmail(),
-                        employee.getPassword(),
-                        rol
-                );
-
-        Long employeeUserId = userServicePort.createEmployee(employeeUserRequestDto);
-
-        employeeRestaurantPersistencePort.save(
-                new EmployeeRestaurant(employeeUserId, employee.getRestaurantId())
-        );
+    public List<Restaurant> listRestaurants(int page, int size) {
+        return restaurantPersistencePort.listRestaurants(page, size);
     }
 
     @Override
-    public List<Restaurant> listRestaurants(int page, int size, String rol) {
-        if (!rol.equals(Rol.CLIENTE.name())) {
-            throw new DomainException(ErrorCode.UNAUTHORIZED, "Only clients can list restaurants");
+    public void validateOwner(Long restaurantId, Long userId) {
+        Restaurant restaurant = restaurantPersistencePort.findById(
+                restaurantId).orElseThrow(() ->
+                new DomainException(ErrorCode.DATA_NOT_FOUND, "Restaurant not found"));
+
+        if(!restaurant.getOwnerId().equals(userId)){
+            throw new DomainException(ErrorCode.UNAUTHORIZED, "The user is not the owner of this restaurant");
         }
-        return restaurantPersistencePort.listRestaurants(page, size);
+    }
+
+    @Override
+    public void assignEmployeeToRestaurant(EmployeeRestaurant employeeRestaurant) {
+        employeeRestaurantPersistencePort.save(employeeRestaurant);
     }
 }

@@ -5,7 +5,6 @@ import com.pragma.plazoleta.application.dto.request.DishRequestDto;
 import com.pragma.plazoleta.application.dto.request.UpdateDishRequestDto;
 import com.pragma.plazoleta.application.dto.request.UpdateDishStatusRequestDto;
 import com.pragma.plazoleta.application.handler.IDishHandler;
-import com.pragma.plazoleta.domain.model.DishCategory;
 import com.pragma.plazoleta.domain.spi.IJwtPersistencePort;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,14 +46,14 @@ class DishRestControllerTest {
         dto.setPrice(25000);
         dto.setDescription("Pasta artesanal");
         dto.setImageUrl("https://img.com/pasta.png");
-        dto.setCategory(DishCategory.MAIN_COURSE);
+        dto.setCategory(1L);
         dto.setRestaurantId(1L);
 
         Long userId = 10L;
         String rol = "OWNER";
 
         doNothing().when(dishHandler)
-                .saveDish(any(DishRequestDto.class), anyLong(), anyString());
+                .saveDish(any(DishRequestDto.class), anyLong());
 
         mockMvc.perform(post(DISH_URL)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -65,8 +64,7 @@ class DishRestControllerTest {
 
         verify(dishHandler).saveDish(
                 any(DishRequestDto.class),
-                eq(userId),
-                eq(rol)
+                eq(userId)
         );
     }
 
@@ -96,9 +94,8 @@ class DishRestControllerTest {
         String rol = "OWNER";
 
         doNothing().when(dishHandler)
-                .updateDish(any(UpdateDishRequestDto.class), anyLong(), anyString());
+                .updateDish(any(UpdateDishRequestDto.class), anyLong());
 
-        // act & assert
         mockMvc.perform(patch("/api/v1/plazoleta/dish/")
                         .contentType(MediaType.APPLICATION_JSON)
                         .requestAttr("auth.userId", userId)
@@ -108,8 +105,7 @@ class DishRestControllerTest {
 
         verify(dishHandler).updateDish(
                 any(UpdateDishRequestDto.class),
-                eq(userId),
-                eq(rol)
+                eq(userId)
         );
     }
     @Test
@@ -134,7 +130,6 @@ class DishRestControllerTest {
                 .updateDishStatus(
                         any(UpdateDishStatusRequestDto.class),
                         eq(userId),
-                        eq(rol),
                         eq(dishId)
                 );
     }

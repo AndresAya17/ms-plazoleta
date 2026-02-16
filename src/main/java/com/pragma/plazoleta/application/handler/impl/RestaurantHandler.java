@@ -1,12 +1,12 @@
 package com.pragma.plazoleta.application.handler.impl;
 
-import com.pragma.plazoleta.application.dto.request.RestaurantEmployeeRequestDto;
+import com.pragma.plazoleta.application.dto.request.CreateEmployeeRestaurantRequestDto;
 import com.pragma.plazoleta.application.dto.request.RestaurantRequestDto;
 import com.pragma.plazoleta.application.dto.response.DishResponseDto;
 import com.pragma.plazoleta.application.dto.response.PageResponseDto;
 import com.pragma.plazoleta.application.dto.response.RestaurantListResponseDto;
 import com.pragma.plazoleta.application.handler.IRestaurantHandler;
-import com.pragma.plazoleta.application.mapper.IEmployeeRestaurantRequestMapper;
+import com.pragma.plazoleta.application.mapper.IEmployeeRestaurantMapper;
 import com.pragma.plazoleta.application.mapper.IRestaurantListResponseMapper;
 import com.pragma.plazoleta.application.mapper.IRestaurantRequestMapper;
 import com.pragma.plazoleta.application.mapper.IRestaurantResponseMapper;
@@ -26,26 +26,20 @@ public class RestaurantHandler implements IRestaurantHandler {
     private final IRestaurantServicePort restaurantServicePort;
     private final IRestaurantRequestMapper restaurantRequestMapper;
     private final IRestaurantResponseMapper restaurantResponseMapper;
-    private final IEmployeeRestaurantRequestMapper employeeRestaurantRequestMapper;
     private final IRestaurantListResponseMapper restaurantListResponseMapper;
     private final IDishServicePort dishServicePort;
+    private final IEmployeeRestaurantMapper employeeRestaurantMapper;
 
     @Override
-    public void saveRestaurant(RestaurantRequestDto restaurantRequestDto, Long userId, String rol) {
+    public void saveRestaurant(RestaurantRequestDto restaurantRequestDto) {
         Restaurant restaurant = restaurantRequestMapper.toRestaurant((restaurantRequestDto));
-        restaurantServicePort.saveRestaurant(restaurant, userId, rol);
+        restaurantServicePort.saveRestaurant(restaurant);
     }
 
     @Override
-    public void saveRestaurantEmployee(RestaurantEmployeeRequestDto restaurantEmployeeRequestDto, Long userId, String rol, Long restaurantId) {
-        EmployeeForRestaurantCommand employee = employeeRestaurantRequestMapper.toEmployee(restaurantEmployeeRequestDto,restaurantId,userId);
-        restaurantServicePort.saveEmployee(employee, rol);
-    }
-
-    @Override
-    public List<RestaurantListResponseDto> listRestaurants(int page, int size, String rol) {
+    public List<RestaurantListResponseDto> listRestaurants(int page, int size) {
         List<Restaurant> restaurants =
-                restaurantServicePort.listRestaurants(page, size, rol);
+                restaurantServicePort.listRestaurants(page, size);
 
         return restaurants.stream()
                 .map(restaurantListResponseMapper::toResponse)
@@ -53,12 +47,23 @@ public class RestaurantHandler implements IRestaurantHandler {
     }
 
     @Override
-    public PageResponseDto<DishResponseDto> listDish(int page, int size, String rol, Long restaurantId, DishCategory category) {
+    public PageResponseDto<DishResponseDto> listDish(int page, int size, Long restaurantId, Long categoryId) {
         PageResult<Dish> result =
                 dishServicePort.listDishesByRestaurant(
-                        restaurantId, category, page, size, rol
-                );
+                        restaurantId, page, size, categoryId);
         return restaurantResponseMapper.toResponsePage(result);
     }
+
+    @Override
+    public void validateOwner(Long restaurantId, Long userId) {
+        restaurantServicePort.validateOwner(restaurantId, userId);
+    }
+
+    @Override
+    public void assignEmployeeToRestaurant(CreateEmployeeRestaurantRequestDto employeeRestaurantRequestDto) {
+        EmployeeRestaurant employeeRestaurant = employeeRestaurantMapper.toEmployee(employeeRestaurantRequestDto);
+        restaurantServicePort.assignEmployeeToRestaurant(employeeRestaurant);
+    }
+
 
 }

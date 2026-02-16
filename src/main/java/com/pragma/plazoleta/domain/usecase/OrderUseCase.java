@@ -1,13 +1,11 @@
 package com.pragma.plazoleta.domain.usecase;
 
-import com.pragma.plazoleta.domain.api.IDishServicePort;
 import com.pragma.plazoleta.domain.api.IOrderServicePort;
 import com.pragma.plazoleta.domain.exception.DomainException;
 import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.Dish;
 import com.pragma.plazoleta.domain.model.Order;
 import com.pragma.plazoleta.domain.model.OrderItem;
-import com.pragma.plazoleta.domain.model.Rol;
 import com.pragma.plazoleta.domain.spi.IDishPersistencePort;
 import com.pragma.plazoleta.domain.spi.IOrderPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
@@ -25,10 +23,7 @@ public class OrderUseCase implements IOrderServicePort {
     }
 
     @Override
-    public Order saveOrder(Order order, Long userId, String rol) {
-        if (!rol.equals(Rol.CLIENTE.name())) {
-            throw new DomainException(ErrorCode.UNAUTHORIZED, "Only clients can list restaurants");
-        }
+    public Order saveOrder(Order order, Long userId) {
         restaurantPersistencePort.findById(order.getRestaurantId())
                 .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, "Restaurant not found"));
         for (OrderItem item : order.getItems()) {

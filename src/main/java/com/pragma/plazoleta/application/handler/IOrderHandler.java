@@ -4,5 +4,5 @@ import com.pragma.plazoleta.application.dto.request.CreateOrderRequestDto;
 import com.pragma.plazoleta.application.dto.response.OrderResponseDto;
 
 public interface IOrderHandler {
-    OrderResponseDto saveOrder(CreateOrderRequestDto orderRequestDto, Long userId, String rol);
+    OrderResponseDto saveOrder(CreateOrderRequestDto orderRequestDto, Long userId);
 }

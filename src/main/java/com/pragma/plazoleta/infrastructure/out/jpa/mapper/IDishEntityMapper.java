@@ -7,14 +7,14 @@ import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring",
+        uses = ICategoryEntityMapper.class,
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         unmappedSourcePolicy = ReportingPolicy.IGNORE
 )
 public interface IDishEntityMapper {
 
-    @Mapping(source = "category", target = "dishCategory")
+    @Mapping(target = "category", source = "category.id")
     DishEntity toEntity(Dish dish);
 
-    @Mapping(source = "dishCategory", target = "category")
     Dish toDish(DishEntity dishEntity);
 }

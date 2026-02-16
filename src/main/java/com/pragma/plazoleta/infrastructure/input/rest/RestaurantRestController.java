@@ -1,12 +1,11 @@
 package com.pragma.plazoleta.infrastructure.input.rest;
 
-import com.pragma.plazoleta.application.dto.request.RestaurantEmployeeRequestDto;
+import com.pragma.plazoleta.application.dto.request.CreateEmployeeRestaurantRequestDto;
 import com.pragma.plazoleta.application.dto.request.RestaurantRequestDto;
 import com.pragma.plazoleta.application.dto.response.DishResponseDto;
 import com.pragma.plazoleta.application.dto.response.PageResponseDto;
 import com.pragma.plazoleta.application.dto.response.RestaurantListResponseDto;
 import com.pragma.plazoleta.application.handler.IRestaurantHandler;
-import com.pragma.plazoleta.domain.model.DishCategory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -14,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,35 +36,14 @@ public class RestaurantRestController {
             @ApiResponse(responseCode = "403", description = "User is not owner"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/")
     public ResponseEntity<Void> saveRestaurant(
-            @RequestAttribute("auth.userId") Long userId,
-            @RequestAttribute("auth.rol") String rol,
             @Valid @RequestBody RestaurantRequestDto restaurantRequestDto) {
-        restaurantHandler.saveRestaurant(restaurantRequestDto, userId, rol);
+        restaurantHandler.saveRestaurant(restaurantRequestDto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @Operation(
-            summary = "Create restaurant employee",
-            description = "Allows a restaurant owner to create an employee associated with their restaurant."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Employee created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid employee data"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "403", description = "User does not have PROPIETARIO role"),
-            @ApiResponse(responseCode = "404", description = "Restaurant not found")
-    })
-    @PostMapping("/{id}/employees")
-    public ResponseEntity<Void> saveEmployee(
-            @PathVariable("id") Long restaurantId,
-            @RequestAttribute("auth.userId") Long userId,
-            @RequestAttribute("auth.rol") String rol,
-            @Valid @RequestBody RestaurantEmployeeRequestDto restaurantRequestDto) {
-        restaurantHandler.saveRestaurantEmployee(restaurantRequestDto, userId, rol, restaurantId);
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
 
     @Operation(
             summary = "List restaurants",
@@ -76,14 +55,14 @@ public class RestaurantRestController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "403", description = "User does not have CLIENTE role")
     })
+    @PreAuthorize("hasAuthority('CLIENT')")
     @GetMapping("/restaurants")
     public ResponseEntity<List<RestaurantListResponseDto>> listRestaurants(
-            @RequestAttribute("auth.rol") String rol,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         return ResponseEntity.ok(
-                restaurantHandler.listRestaurants(page, size, rol)
+                restaurantHandler.listRestaurants(page, size)
         );
     }
 
@@ -96,20 +75,37 @@ public class RestaurantRestController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Dishes retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized - missing or invalid authentication"),
-            @ApiResponse(responseCode = "403", description = "Forbidden - user does not have CLIENTE role"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - user does not have CLIENT role"),
             @ApiResponse(responseCode = "404", description = "Restaurant not found")
     })
+    @PreAuthorize("hasAuthority('CLIENT')")
     @GetMapping("/{id}/dishes")
     public ResponseEntity<PageResponseDto<DishResponseDto>> listDish(
             @PathVariable("id") Long restaurantId,
-            @RequestAttribute("auth.rol") String rol,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) DishCategory category
+            @RequestParam(required = false) Long categoryId
     ) {
         return ResponseEntity.ok(
-                restaurantHandler.listDish(page, size, rol, restaurantId, category)
+                restaurantHandler.listDish(page, size, restaurantId, categoryId)
         );
+    }
+
+    @GetMapping("/{restaurantId}/validate-owner")
+    public ResponseEntity<Void> validateOwner(
+            @PathVariable Long restaurantId,
+            @RequestParam Long userId
+    ) {
+        restaurantHandler.validateOwner(restaurantId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/employeeRestaurant/")
+    public ResponseEntity<Void> createEmployeeRestaurant(
+            @Valid @RequestBody CreateEmployeeRestaurantRequestDto employeeRestaurantRequestDto
+    ) {
+        restaurantHandler.assignEmployeeToRestaurant(employeeRestaurantRequestDto);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
 
