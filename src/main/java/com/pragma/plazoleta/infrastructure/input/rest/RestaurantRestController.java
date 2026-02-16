@@ -1,5 +1,6 @@
 package com.pragma.plazoleta.infrastructure.input.rest;
 
+import com.pragma.plazoleta.application.dto.request.CreateEmployeeRestaurantRequestDto;
 import com.pragma.plazoleta.application.dto.request.RestaurantRequestDto;
 import com.pragma.plazoleta.application.dto.response.DishResponseDto;
 import com.pragma.plazoleta.application.dto.response.PageResponseDto;
@@ -88,6 +89,23 @@ public class RestaurantRestController {
         return ResponseEntity.ok(
                 restaurantHandler.listDish(page, size, restaurantId, categoryId)
         );
+    }
+
+    @GetMapping("/{restaurantId}/validate-owner")
+    public ResponseEntity<Void> validateOwner(
+            @PathVariable Long restaurantId,
+            @RequestParam Long userId
+    ) {
+        restaurantHandler.validateOwner(restaurantId, userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/employeeRestaurant/")
+    public ResponseEntity<Void> createEmployeeRestaurant(
+            @Valid @RequestBody CreateEmployeeRestaurantRequestDto employeeRestaurantRequestDto
+    ) {
+        restaurantHandler.assignEmployeeToRestaurant(employeeRestaurantRequestDto);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
 
