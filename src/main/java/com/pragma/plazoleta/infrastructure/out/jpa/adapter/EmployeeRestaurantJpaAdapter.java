@@ -7,6 +7,7 @@ import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IEmployeeRestaurantEnt
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.EmployeeRestaurantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -19,5 +20,11 @@ public class EmployeeRestaurantJpaAdapter implements IEmployeeRestaurantPersiste
     public void save(EmployeeRestaurant employeeRestaurant) {
         EmployeeRestaurantEntity entity = mapper.toEntity(employeeRestaurant);
         repository.save(entity);
+    }
+
+    @Override
+    public Optional<Long> findRestaurantIdByEmployeeUserId(Long employeeUserId) {
+        return repository.findByEmployeeUserId(employeeUserId)
+                .map(EmployeeRestaurantEntity::getRestaurantId);
     }
 }

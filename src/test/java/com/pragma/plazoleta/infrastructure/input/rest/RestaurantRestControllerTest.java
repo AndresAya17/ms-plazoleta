@@ -1,6 +1,7 @@
 package com.pragma.plazoleta.infrastructure.input.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pragma.plazoleta.application.dto.request.CreateEmployeeRestaurantRequestDto;
 import com.pragma.plazoleta.application.dto.request.RestaurantRequestDto;
 import com.pragma.plazoleta.application.dto.response.DishResponseDto;
 import com.pragma.plazoleta.application.dto.response.PageResponseDto;
@@ -14,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.test.context.support.WithMockUser;
 
@@ -126,6 +128,47 @@ class RestaurantRestControllerTest {
 
         verify(restaurantHandler)
                 .listDish(page, size, restaurantId, null);
+        verifyNoMoreInteractions(restaurantHandler);
+    }
+    @Test
+    void shouldValidateOwner() throws Exception {
+        Long restaurantId = 1L;
+        Long userId = 10L;
+
+        doNothing().when(restaurantHandler)
+                .validateOwner(restaurantId, userId);
+
+        mockMvc.perform(
+                        get(BASE_URL + "/" + restaurantId + "/validate-owner")
+                                .param("userId", String.valueOf(userId))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+
+        verify(restaurantHandler)
+                .validateOwner(restaurantId, userId);
+        verifyNoMoreInteractions(restaurantHandler);
+    }
+    @Test
+    void shouldCreateEmployeeRestaurant() throws Exception {
+        CreateEmployeeRestaurantRequestDto request =
+                new CreateEmployeeRestaurantRequestDto();
+
+        request.setRestaurantId(1L);
+        request.setEmployeeUserId(20L);
+
+        doNothing().when(restaurantHandler)
+                .assignEmployeeToRestaurant(any(CreateEmployeeRestaurantRequestDto.class));
+
+        mockMvc.perform(
+                        post(BASE_URL + "/employeeRestaurant/")
+                                .content(objectMapper.writeValueAsString(request))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isCreated());
+
+        verify(restaurantHandler)
+                .assignEmployeeToRestaurant(any(CreateEmployeeRestaurantRequestDto.class));
         verifyNoMoreInteractions(restaurantHandler);
     }
 }

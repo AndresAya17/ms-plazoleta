@@ -10,9 +10,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
+
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class EmployeeRestaurantJpaAdapterTest {
@@ -42,5 +45,28 @@ public class EmployeeRestaurantJpaAdapterTest {
         verify(mapper).toEntity(employeeRestaurant);
         verify(repository).save(entity);
         verifyNoMoreInteractions(mapper, repository);
+    }
+    @Test
+    void shouldReturnRestaurantIdWhenEmployeeExists() {
+
+        Long employeeUserId = 1L;
+        Long restaurantId = 10L;
+
+        EmployeeRestaurantEntity entity = new EmployeeRestaurantEntity();
+        entity.setEmployeeUserId(employeeUserId);
+        entity.setRestaurantId(restaurantId);
+
+        when(repository.findByEmployeeUserId(employeeUserId))
+                .thenReturn(Optional.of(entity));
+
+        Optional<Long> result =
+                employeeRestaurantJpaAdapter
+                        .findRestaurantIdByEmployeeUserId(employeeUserId);
+
+        verify(repository)
+                .findByEmployeeUserId(employeeUserId);
+
+        assertTrue(result.isPresent());
+        assertEquals(restaurantId, result.get());
     }
 }

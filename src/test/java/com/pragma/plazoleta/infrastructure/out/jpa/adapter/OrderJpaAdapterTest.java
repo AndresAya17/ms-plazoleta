@@ -1,6 +1,7 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
 import com.pragma.plazoleta.domain.model.Order;
+import com.pragma.plazoleta.domain.model.OrderStatus;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.OrderEntity;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.OrderItemEntity;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IOrderEntityMapper;
@@ -9,6 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -58,5 +63,52 @@ public class OrderJpaAdapterTest {
 
         assertSame(orderEntity, item1.getOrder());
         assertSame(orderEntity, item2.getOrder());
+    }
+
+    @Test
+    void shouldFindOrdersByRestaurantIdAndStatus() {
+
+        long restaurantId = 1L;
+        OrderStatus status = OrderStatus.PENDIENTE;
+        int page = 0;
+        int size = 5;
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        OrderEntity entity = new OrderEntity();
+        Order domainOrder = mock(Order.class);
+
+        Page<OrderEntity> entityPage =
+                new PageImpl<>(List.of(entity), pageable, 1);
+
+        when(orderRepository.findByRestaurantIdAndStatus(
+                restaurantId,
+                status,
+                pageable
+        )).thenReturn(entityPage);
+
+        when(orderEntityMapper.toDomain(entity))
+                .thenReturn(domainOrder);
+
+        Page<Order> result =
+                orderJpaAdapter.findByRestaurantIdAndStatus(
+                        restaurantId,
+                        status,
+                        page,
+                        size
+                );
+
+        verify(orderRepository)
+                .findByRestaurantIdAndStatus(
+                        restaurantId,
+                        status,
+                        pageable
+                );
+
+        verify(orderEntityMapper)
+                .toDomain(entity);
+
+        assertEquals(1, result.getTotalElements());
+        assertSame(domainOrder, result.getContent().get(0));
     }
 }

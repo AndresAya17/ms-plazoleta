@@ -1,5 +1,6 @@
 package com.pragma.plazoleta.application.mapper;
 
+import com.pragma.plazoleta.application.dto.response.ListOrderResponseDto;
 import com.pragma.plazoleta.application.dto.response.OrderResponseDto;
 import com.pragma.plazoleta.domain.model.Order;
 import org.mapstruct.Mapper;
@@ -10,4 +11,5 @@ import org.mapstruct.ReportingPolicy;
         unmappedSourcePolicy = ReportingPolicy.IGNORE)
 public interface IOrderResponseMapper {
     OrderResponseDto toResponse(Order order);
+    ListOrderResponseDto listToResponse(Order order);
 }
