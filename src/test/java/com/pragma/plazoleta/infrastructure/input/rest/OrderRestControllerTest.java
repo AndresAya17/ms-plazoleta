@@ -3,7 +3,9 @@ package com.pragma.plazoleta.infrastructure.input.rest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pragma.plazoleta.application.dto.request.CreateOrderRequestDto;
 import com.pragma.plazoleta.application.dto.request.OrderItemRequestDto;
+import com.pragma.plazoleta.application.dto.response.ListOrderResponseDto;
 import com.pragma.plazoleta.application.dto.response.OrderResponseDto;
+import com.pragma.plazoleta.application.dto.response.PageResponseDto;
 import com.pragma.plazoleta.application.handler.IOrderHandler;
 import com.pragma.plazoleta.domain.spi.IJwtPersistencePort;
 import com.pragma.plazoleta.infrastructure.input.security.SecurityConfig;
@@ -26,6 +28,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @WebMvcTest(
         controllers = OrderRestController.class,
@@ -78,5 +82,47 @@ class OrderRestControllerTest {
 
         verify(orderHandler)
                 .saveOrder(any(CreateOrderRequestDto.class), eq(userId));
+    }
+
+    @Test
+    @WithMockUser(authorities = "EMPLOYEE")
+    void shouldReturnOrdersByStatus() throws Exception {
+
+        Long userId = 5L;
+        String status = "PENDIENTE";
+        int page = 0;
+        int size = 10;
+
+        ListOrderResponseDto order = new ListOrderResponseDto();
+        order.setId(1L);
+        order.setClientId(20L);
+        order.setRestaurantId(1L);
+        order.setStatus(status);
+
+        PageResponseDto<ListOrderResponseDto> response =
+                new PageResponseDto<>(
+                        List.of(order),
+                        page,
+                        size,
+                        1L,
+                        1
+                );
+
+        when(orderHandler.listOrderByStatus(userId, status, page, size))
+                .thenReturn(response);
+
+        mockMvc.perform(
+                        get(BASE_URL + "/")
+                                .param("status", status)
+                                .param("page", String.valueOf(page))
+                                .param("size", String.valueOf(size))
+                                .requestAttr("auth.userId", userId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+
+        verify(orderHandler)
+                .listOrderByStatus(userId, status, page, size);
+        verifyNoMoreInteractions(orderHandler);
     }
 }

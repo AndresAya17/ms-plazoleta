@@ -2,11 +2,9 @@ package com.pragma.plazoleta.domain.usecase;
 
 import com.pragma.plazoleta.domain.exception.DomainException;
 import com.pragma.plazoleta.domain.exception.ErrorCode;
-import com.pragma.plazoleta.domain.model.Dish;
-import com.pragma.plazoleta.domain.model.Order;
-import com.pragma.plazoleta.domain.model.OrderItem;
-import com.pragma.plazoleta.domain.model.Restaurant;
+import com.pragma.plazoleta.domain.model.*;
 import com.pragma.plazoleta.domain.spi.IDishPersistencePort;
+import com.pragma.plazoleta.domain.spi.IEmployeeRestaurantPersistencePort;
 import com.pragma.plazoleta.domain.spi.IOrderPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
 import org.junit.jupiter.api.Test;
@@ -14,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +25,9 @@ import static org.mockito.Mockito.*;
 class OrderUseCaseTest {
     @Mock
     private IRestaurantPersistencePort restaurantPersistencePort;
+
+    @Mock
+    private IEmployeeRestaurantPersistencePort employeeRestaurantPersistencePort;
 
     @Mock
     private IDishPersistencePort dishPersistencePort;
@@ -192,5 +195,95 @@ class OrderUseCaseTest {
 
         verify(orderPersistencePort, never()).saveOrder(any());
     }
+    @Test
+    void shouldThrowExceptionWhenEmployeeHasNoRestaurant() {
+
+        Long userId = 10L;
+
+        when(employeeRestaurantPersistencePort
+                .findRestaurantIdByEmployeeUserId(userId))
+                .thenReturn(Optional.empty());
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.listOrderByStatus(userId, "PENDIENTE", 0, 10)
+        );
+
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
+        assertEquals("Employee does not belong to any restaurant", exception.getMessage());
+
+        verify(employeeRestaurantPersistencePort)
+                .findRestaurantIdByEmployeeUserId(userId);
+
+        verifyNoInteractions(orderPersistencePort);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenStatusIsInvalid() {
+
+        Long userId = 10L;
+        Long restaurantId = 1L;
+
+        when(employeeRestaurantPersistencePort
+                .findRestaurantIdByEmployeeUserId(userId))
+                .thenReturn(Optional.of(restaurantId));
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.listOrderByStatus(userId, "INVALID", 0, 10)
+        );
+
+        assertEquals(ErrorCode.INVALID_STATUS, exception.getErrorCode());
+
+        verify(employeeRestaurantPersistencePort)
+                .findRestaurantIdByEmployeeUserId(userId);
+
+        verifyNoInteractions(orderPersistencePort);
+    }
+
+    @Test
+    void shouldReturnOrdersWhenDataIsValid() {
+
+        Long userId = 10L;
+        Long restaurantId = 1L;
+        String status = "PENDIENTE";
+        int page = 0;
+        int size = 5;
+
+        Order order = mock(Order.class);
+        Page<Order> pageResult =
+                new PageImpl<>(List.of(order));
+
+        when(employeeRestaurantPersistencePort
+                .findRestaurantIdByEmployeeUserId(userId))
+                .thenReturn(Optional.of(restaurantId));
+
+        when(orderPersistencePort
+                .findByRestaurantIdAndStatus(
+                        restaurantId,
+                        OrderStatus.PENDIENTE,
+                        page,
+                        size
+                ))
+                .thenReturn(pageResult);
+
+        Page<Order> result =
+                orderUseCase.listOrderByStatus(userId, status, page, size);
+
+        assertEquals(1, result.getTotalElements());
+
+        verify(employeeRestaurantPersistencePort)
+                .findRestaurantIdByEmployeeUserId(userId);
+
+        verify(orderPersistencePort)
+                .findByRestaurantIdAndStatus(
+                        restaurantId,
+                        OrderStatus.PENDIENTE,
+                        page,
+                        size
+                );
+    }
+
+
 
 }
