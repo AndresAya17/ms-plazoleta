@@ -33,6 +33,9 @@ public class OrderEntity {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "chef_id")
+    private Long chefId;
+
     @Builder.Default
     @OneToMany(
             mappedBy = "order",

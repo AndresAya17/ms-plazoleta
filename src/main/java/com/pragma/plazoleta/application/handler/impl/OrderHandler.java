@@ -1,15 +1,20 @@
 package com.pragma.plazoleta.application.handler.impl;
 
 import com.pragma.plazoleta.application.dto.request.CreateOrderRequestDto;
+import com.pragma.plazoleta.application.dto.response.ListOrderResponseDto;
 import com.pragma.plazoleta.application.dto.response.OrderResponseDto;
+import com.pragma.plazoleta.application.dto.response.PageResponseDto;
 import com.pragma.plazoleta.application.handler.IOrderHandler;
 import com.pragma.plazoleta.application.mapper.IOrderRequestMapper;
 import com.pragma.plazoleta.application.mapper.IOrderResponseMapper;
 import com.pragma.plazoleta.domain.api.IOrderServicePort;
 import com.pragma.plazoleta.domain.model.Order;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,5 +31,29 @@ public class OrderHandler implements IOrderHandler {
         Order order = requestMapper.toOrder(orderRequestDto);
         Order orderSaved = orderServicePort.saveOrder(order, userId);
         return orderResponseMapper.toResponse(orderSaved);
+    }
+
+    @Override
+    public PageResponseDto<ListOrderResponseDto> listOrderByStatus(Long userId, String status, int page, int size) {
+        Page<Order> orders = orderServicePort.listOrderByStatus(
+                userId,
+                status,
+                page,
+                size
+        );
+
+        List<ListOrderResponseDto> content =
+                orders.getContent()
+                        .stream()
+                        .map(orderResponseMapper::listToResponse)
+                        .toList();
+
+        return new PageResponseDto<>(
+                content,
+                orders.getNumber(),
+                orders.getSize(),
+                orders.getTotalElements(),
+                orders.getTotalPages()
+        );
     }
 }

@@ -15,6 +15,7 @@ public class Order {
     private OrderStatus status;
     private List<OrderItem> items;
     private LocalDateTime createdAt;
+    private Long chefId;
 
     public Order(
             Long clientId,
