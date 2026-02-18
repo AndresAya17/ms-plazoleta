@@ -11,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor
 public class OrderJpaAdapter implements IOrderPersistencePort {
     private final IOrderRepository orderRepository;
@@ -42,5 +44,11 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
                 );
 
         return orderEntities.map(orderEntityMapper::toDomain);
+    }
+
+    @Override
+    public Optional<Order> findById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .map(orderEntityMapper::toDomain);
     }
 }

@@ -30,7 +30,7 @@ public class OrderRestController {
     }
 
     @PreAuthorize("hasAuthority('EMPLOYEE')")
-    @GetMapping("/")
+    @GetMapping()
     public ResponseEntity<PageResponseDto<ListOrderResponseDto>> listOrderByStatus(
             @RequestAttribute("auth.userId") Long userId,
             @RequestParam String status,
@@ -38,6 +38,17 @@ public class OrderRestController {
             @RequestParam int size) {
         return ResponseEntity.ok(
                 orderHandler.listOrderByStatus(userId, status, page, size)
+        );
+    }
+
+    @PreAuthorize("hasAuthority('EMPLOYEE')")
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<OrderResponseDto> updateStatusOrder(
+            @PathVariable Long orderId,
+            @RequestAttribute("auth.userId") Long userId) {
+
+        return ResponseEntity.ok(
+                orderHandler.updateStatusOrder(userId, orderId)
         );
     }
 }

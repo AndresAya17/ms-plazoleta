@@ -11,6 +11,7 @@ import com.pragma.plazoleta.domain.spi.IDishPersistencePort;
 import com.pragma.plazoleta.domain.spi.IEmployeeRestaurantPersistencePort;
 import com.pragma.plazoleta.domain.spi.IOrderPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
+import com.pragma.plazoleta.domain.validator.OrderDomainValidator;
 import org.springframework.data.domain.Page;
 
 public class OrderUseCase implements IOrderServicePort {
@@ -73,5 +74,26 @@ public class OrderUseCase implements IOrderServicePort {
                 page,
                 size
         );
+    }
+
+    @Override
+    public Order updateStatus(Long userId, Long orderId) {
+        Long restaurantId = employeeRestaurantPersistencePort
+                .findRestaurantIdByEmployeeUserId(userId)
+                .orElseThrow(() -> new DomainException(
+                        ErrorCode.DATA_NOT_FOUND, "Employee does not belong to any restaurant"
+                ));
+
+        Order order = orderPersistencePort.findById(orderId)
+                .orElseThrow(() -> new DomainException(
+                        ErrorCode.DATA_NOT_FOUND, "Order not found"
+                ));
+
+        if(!order.getRestaurantId().equals(restaurantId)){
+            throw new DomainException(ErrorCode.UNAUTHORIZED, "The employee is not authorized to manage this order");
+        }
+        OrderDomainValidator.accept(order);
+        order.setChefId(userId);
+        return orderPersistencePort.saveOrder(order);
     }
 }

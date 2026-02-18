@@ -284,6 +284,126 @@ class OrderUseCaseTest {
                 );
     }
 
+    @Test
+    void shouldThrowWhenEmployeeDoesNotBelongToAnyRestaurant() {
+
+        Long userId = 10L;
+        Long orderId = 1L;
+
+        when(employeeRestaurantPersistencePort
+                .findRestaurantIdByEmployeeUserId(userId))
+                .thenReturn(Optional.empty());
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.updateStatus(userId, orderId)
+        );
+
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
+
+        verify(employeeRestaurantPersistencePort)
+                .findRestaurantIdByEmployeeUserId(userId);
+
+        verifyNoMoreInteractions(orderPersistencePort);
+    }
+
+    @Test
+    void shouldThrowWhenOrderNotFound() {
+
+        Long userId = 10L;
+        Long orderId = 1L;
+        Long restaurantId = 5L;
+
+        when(employeeRestaurantPersistencePort
+                .findRestaurantIdByEmployeeUserId(userId))
+                .thenReturn(Optional.of(restaurantId));
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.empty());
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.updateStatus(userId, orderId)
+        );
+
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
+
+        verify(employeeRestaurantPersistencePort)
+                .findRestaurantIdByEmployeeUserId(userId);
+
+        verify(orderPersistencePort)
+                .findById(orderId);
+    }
+
+    @Test
+    void shouldThrowWhenOrderBelongsToAnotherRestaurant() {
+
+        Long userId = 10L;
+        Long orderId = 1L;
+        Long employeeRestaurantId = 5L;
+        Long orderRestaurantId = 99L;
+
+        Order order = mock(Order.class);
+
+        when(employeeRestaurantPersistencePort
+                .findRestaurantIdByEmployeeUserId(userId))
+                .thenReturn(Optional.of(employeeRestaurantId));
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.of(order));
+
+        when(order.getRestaurantId())
+                .thenReturn(orderRestaurantId);
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.updateStatus(userId, orderId)
+        );
+
+        assertEquals(ErrorCode.UNAUTHORIZED, exception.getErrorCode());
+
+        verify(order).getRestaurantId();
+    }
+
+    @Test
+    void shouldUpdateOrderWhenDataIsValid() {
+
+        Long userId = 10L;
+        Long orderId = 1L;
+        Long restaurantId = 5L;
+
+        Order order = new Order(
+                20L,
+                restaurantId,
+                List.of()
+        );
+
+        when(employeeRestaurantPersistencePort
+                .findRestaurantIdByEmployeeUserId(userId))
+                .thenReturn(Optional.of(restaurantId));
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.of(order));
+
+        when(orderPersistencePort.saveOrder(order))
+                .thenReturn(order);
+
+        Order result = orderUseCase.updateStatus(userId, orderId);
+
+        assertNotNull(result);
+
+        verify(employeeRestaurantPersistencePort)
+                .findRestaurantIdByEmployeeUserId(userId);
+
+        verify(orderPersistencePort)
+                .findById(orderId);
+
+        verify(orderPersistencePort)
+                .saveOrder(order);
+    }
+
+
+
 
 
 }

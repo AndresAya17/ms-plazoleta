@@ -56,4 +56,10 @@ public class OrderHandler implements IOrderHandler {
                 orders.getTotalPages()
         );
     }
+
+    @Override
+    public OrderResponseDto updateStatusOrder(Long userId, Long orderId) {
+        Order orderSaved = orderServicePort.updateStatus(userId, orderId);
+        return orderResponseMapper.toResponse(orderSaved);
+    }
 }
