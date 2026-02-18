@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -111,4 +112,29 @@ public class OrderJpaAdapterTest {
         assertEquals(1, result.getTotalElements());
         assertSame(domainOrder, result.getContent().get(0));
     }
+
+    @Test
+    void shouldReturnOrderWhenEntityExists() {
+
+        Long orderId = 1L;
+
+        OrderEntity entity = new OrderEntity();
+        Order domainOrder = mock(Order.class);
+
+        when(orderRepository.findById(orderId))
+                .thenReturn(Optional.of(entity));
+
+        when(orderEntityMapper.toDomain(entity))
+                .thenReturn(domainOrder);
+
+        Optional<Order> result =
+                orderJpaAdapter.findById(orderId);
+
+        assertTrue(result.isPresent());
+        assertSame(domainOrder, result.get());
+
+        verify(orderRepository).findById(orderId);
+        verify(orderEntityMapper).toDomain(entity);
+    }
+
 }

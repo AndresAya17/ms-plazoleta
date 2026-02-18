@@ -7,6 +7,7 @@ import com.pragma.plazoleta.application.dto.response.ListOrderResponseDto;
 import com.pragma.plazoleta.application.dto.response.OrderResponseDto;
 import com.pragma.plazoleta.application.dto.response.PageResponseDto;
 import com.pragma.plazoleta.application.handler.IOrderHandler;
+import com.pragma.plazoleta.domain.model.OrderStatus;
 import com.pragma.plazoleta.domain.spi.IJwtPersistencePort;
 import com.pragma.plazoleta.infrastructure.input.security.SecurityConfig;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @WebMvcTest(
@@ -125,4 +127,32 @@ class OrderRestControllerTest {
                 .listOrderByStatus(userId, status, page, size);
         verifyNoMoreInteractions(orderHandler);
     }
+
+    @Test
+    @WithMockUser(authorities = "EMPLOYEE")
+    void shouldUpdateOrderStatus() throws Exception {
+
+        Long userId = 5L;
+        Long orderId = 1L;
+
+        OrderResponseDto responseDto = new OrderResponseDto();
+        responseDto.setId(orderId);
+        responseDto.setStatus(OrderStatus.EN_PREPARACION);
+
+        when(orderHandler.updateStatusOrder(userId, orderId))
+                .thenReturn(responseDto);
+
+        mockMvc.perform(
+                        patch(BASE_URL + "/" + orderId + "/status")
+                                .requestAttr("auth.userId", userId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+
+        verify(orderHandler)
+                .updateStatusOrder(userId, orderId);
+
+        verifyNoMoreInteractions(orderHandler);
+    }
+
 }
