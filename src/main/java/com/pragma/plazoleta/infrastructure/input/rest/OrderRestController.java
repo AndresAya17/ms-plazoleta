@@ -30,7 +30,7 @@ public class OrderRestController {
     }
 
     @PreAuthorize("hasAuthority('EMPLOYEE')")
-    @GetMapping("")
+    @GetMapping()
     public ResponseEntity<PageResponseDto<ListOrderResponseDto>> listOrderByStatus(
             @RequestAttribute("auth.userId") Long userId,
             @RequestParam String status,

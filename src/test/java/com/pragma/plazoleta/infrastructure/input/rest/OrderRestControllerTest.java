@@ -52,7 +52,7 @@ class OrderRestControllerTest {
     @MockBean
     private IJwtPersistencePort jwtPersistencePort;
 
-    private static final String BASE_URL = "/api/v1/plazoleta/order/";
+    private static final String BASE_URL = "/api/v1/plazoleta/order";
 
     @Test
     @WithMockUser(authorities = "CLIENT")
@@ -73,7 +73,7 @@ class OrderRestControllerTest {
                 .thenReturn(responseDto);
 
         mockMvc.perform(
-                        post(BASE_URL)
+                        post(BASE_URL + "/")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .requestAttr("auth.userId", userId)
                                 .content(objectMapper.writeValueAsString(requestDto))
@@ -112,7 +112,7 @@ class OrderRestControllerTest {
                 .thenReturn(response);
 
         mockMvc.perform(
-                        get(BASE_URL + "/")
+                        get(BASE_URL)
                                 .param("status", status)
                                 .param("page", String.valueOf(page))
                                 .param("size", String.valueOf(size))
