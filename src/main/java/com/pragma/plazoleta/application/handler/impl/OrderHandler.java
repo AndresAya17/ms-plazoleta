@@ -62,4 +62,10 @@ public class OrderHandler implements IOrderHandler {
         Order orderSaved = orderServicePort.updateStatus(userId, orderId);
         return orderResponseMapper.toResponse(orderSaved);
     }
+
+    @Override
+    public OrderResponseDto updateStatusOrderReady(Long userId, Long orderId) {
+        Order orderSaved = orderServicePort.updateStatusReady(userId, orderId);
+        return orderResponseMapper.toResponse(orderSaved);
+    }
 }

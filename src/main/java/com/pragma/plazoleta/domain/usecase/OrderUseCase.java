@@ -96,4 +96,29 @@ public class OrderUseCase implements IOrderServicePort {
         order.setChefId(userId);
         return orderPersistencePort.saveOrder(order);
     }
+
+    @Override
+    public Order updateStatusReady(Long userId, Long orderId) {
+        Long restaurantId = employeeRestaurantPersistencePort
+                .findRestaurantIdByEmployeeUserId(userId)
+                .orElseThrow(() -> new DomainException(
+                        ErrorCode.DATA_NOT_FOUND, "Employee does not belong to any restaurant"
+                ));
+
+        Order order = orderPersistencePort.findById(orderId)
+                .orElseThrow(() -> new DomainException(
+                        ErrorCode.DATA_NOT_FOUND, "Order not found"
+                ));
+
+        if(!order.getRestaurantId().equals(restaurantId)){
+            throw new DomainException(ErrorCode.UNAUTHORIZED, "The employee is not authorized to manage this order");
+        }
+
+        if(!order.getChefId().equals(userId)){
+            throw new DomainException(ErrorCode.UNAUTHORIZED, "Employee is not assigned to this order");
+        }
+        OrderDomainValidator.markAsReady(order);
+        //Consumir api de twlio
+        return orderPersistencePort.saveOrder(order);
+    }
 }

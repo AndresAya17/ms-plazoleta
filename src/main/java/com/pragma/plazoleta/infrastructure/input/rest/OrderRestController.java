@@ -51,4 +51,15 @@ public class OrderRestController {
                 orderHandler.updateStatusOrder(userId, orderId)
         );
     }
+
+    @PreAuthorize("hasAuthority('EMPLOYEE')")
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<OrderResponseDto> updateStatusOrderReady(
+            @PathVariable Long orderId,
+            @RequestAttribute("auth.userId") Long userId) {
+
+        return ResponseEntity.ok(
+                orderHandler.updateStatusOrderReady(userId, orderId)
+        );
+    }
 }
