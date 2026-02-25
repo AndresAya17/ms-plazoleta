@@ -3,16 +3,13 @@ package com.pragma.plazoleta.domain.usecase;
 import com.pragma.plazoleta.domain.api.IOrderServicePort;
 import com.pragma.plazoleta.domain.exception.DomainException;
 import com.pragma.plazoleta.domain.exception.ErrorCode;
-import com.pragma.plazoleta.domain.model.Dish;
-import com.pragma.plazoleta.domain.model.Order;
-import com.pragma.plazoleta.domain.model.OrderItem;
-import com.pragma.plazoleta.domain.model.OrderStatus;
-import com.pragma.plazoleta.domain.spi.IDishPersistencePort;
-import com.pragma.plazoleta.domain.spi.IEmployeeRestaurantPersistencePort;
-import com.pragma.plazoleta.domain.spi.IOrderPersistencePort;
-import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
+import com.pragma.plazoleta.domain.model.*;
+import com.pragma.plazoleta.domain.spi.*;
 import com.pragma.plazoleta.domain.validator.OrderDomainValidator;
 import org.springframework.data.domain.Page;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 public class OrderUseCase implements IOrderServicePort {
 
@@ -20,14 +17,25 @@ public class OrderUseCase implements IOrderServicePort {
     private final IDishPersistencePort dishPersistencePort;
     private final IOrderPersistencePort orderPersistencePort;
     private final IEmployeeRestaurantPersistencePort employeeRestaurantPersistencePort;
+    private final IOrderCodePersistencePort orderCodePersistencePort;
+    private final ISmsPersistencePort smsPersistencePort;
+    private final ICodeGeneratorPort codeGeneratorPort;
+    private final IUserPersistencePort userPersistencePort;
 
     public OrderUseCase(IRestaurantPersistencePort restaurantPersistencePort, IDishPersistencePort dishPersistencePort, IOrderPersistencePort orderPersistencePort,
-                        IEmployeeRestaurantPersistencePort employeeRestaurantPersistencePort){
+                        IEmployeeRestaurantPersistencePort employeeRestaurantPersistencePort, IOrderCodePersistencePort orderCodePersistencePort,
+                        ISmsPersistencePort smsPersistencePort, ICodeGeneratorPort codeGeneratorPort, IUserPersistencePort userPersistencePort){
         this.restaurantPersistencePort = restaurantPersistencePort;
         this.dishPersistencePort = dishPersistencePort;
         this.orderPersistencePort = orderPersistencePort;
         this.employeeRestaurantPersistencePort = employeeRestaurantPersistencePort;
+        this.orderCodePersistencePort = orderCodePersistencePort;
+        this.smsPersistencePort = smsPersistencePort;
+        this.codeGeneratorPort = codeGeneratorPort;
+        this.userPersistencePort = userPersistencePort;
     }
+
+    private final String phoneVirtual = "+18777804236";
 
     @Override
     public Order saveOrder(Order order, Long userId) {
@@ -98,27 +106,70 @@ public class OrderUseCase implements IOrderServicePort {
     }
 
     @Override
+    @Transactional
     public Order updateStatusReady(Long userId, Long orderId) {
+        // 1️⃣ Validar que el empleado pertenece a un restaurante
         Long restaurantId = employeeRestaurantPersistencePort
                 .findRestaurantIdByEmployeeUserId(userId)
                 .orElseThrow(() -> new DomainException(
-                        ErrorCode.DATA_NOT_FOUND, "Employee does not belong to any restaurant"
+                        ErrorCode.DATA_NOT_FOUND,
+                        "Employee does not belong to any restaurant"
                 ));
 
+        // 2️⃣ Buscar la orden
         Order order = orderPersistencePort.findById(orderId)
                 .orElseThrow(() -> new DomainException(
-                        ErrorCode.DATA_NOT_FOUND, "Order not found"
+                        ErrorCode.DATA_NOT_FOUND,
+                        "Order not found"
                 ));
 
-        if(!order.getRestaurantId().equals(restaurantId)){
-            throw new DomainException(ErrorCode.UNAUTHORIZED, "The employee is not authorized to manage this order");
+
+
+        // 3️⃣ Validar que la orden pertenece al restaurante
+        if (!order.getRestaurantId().equals(restaurantId)) {
+            throw new DomainException(
+                    ErrorCode.UNAUTHORIZED,
+                    "The employee is not authorized to manage this order"
+            );
         }
 
-        if(!order.getChefId().equals(userId)){
-            throw new DomainException(ErrorCode.UNAUTHORIZED, "Employee is not assigned to this order");
+        // 4️⃣ Validar que el chef asignado es el mismo
+        if (!order.getChefId().equals(userId)) {
+            throw new DomainException(
+                    ErrorCode.UNAUTHORIZED,
+                    "Employee is not assigned to this order"
+            );
         }
+
+        String phone = userPersistencePort.getClientPhoneByUserId(order.getClientId());
+
+        // 5️⃣ Cambiar estado a LISTO
         OrderDomainValidator.markAsReady(order);
-        //Consumir api de twlio
+
+        // 6️⃣ Desactivar códigos anteriores activos
+        orderCodePersistencePort.deactivateByOrderId(orderId);
+
+        // 7️⃣ Generar código OTP
+        String rawCode = codeGeneratorPort.generateSixDigits();
+
+        // 9️⃣ Crear entidad de dominio DeliveryCode
+        DeliveryCode deliveryCode = new DeliveryCode(
+                orderId,
+                rawCode,
+                LocalDateTime.now().plusMinutes(5),
+                true
+        );
+
+        // 🔟 Persistir DeliveryCode
+        orderCodePersistencePort.saveCode(deliveryCode);
+
+        // 1️⃣1️⃣ Enviar SMS con código plano
+        smsPersistencePort.sendSms(
+                "+18777804236",
+                "Your delivery code is: " + rawCode
+        );
+
+        // 1️⃣2️⃣ Persistir orden
         return orderPersistencePort.saveOrder(order);
     }
 }

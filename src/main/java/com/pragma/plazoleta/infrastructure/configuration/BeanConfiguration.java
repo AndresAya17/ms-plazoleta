@@ -62,8 +62,27 @@ public class BeanConfiguration {
     }
 
     @Bean
-    public IOrderServicePort orderServicePort(IEmployeeRestaurantPersistencePort employeeRestaurantPersistencePort){
-        return new OrderUseCase(restaurantPersistencePort(),dishPersistencePort(),orderPersistencePort(), employeeRestaurantPersistencePort);
+    public IOrderServicePort orderServicePort(
+            IRestaurantPersistencePort restaurantPersistencePort,
+            IDishPersistencePort dishPersistencePort,
+            IOrderPersistencePort orderPersistencePort,
+            IEmployeeRestaurantPersistencePort employeeRestaurantPersistencePort,
+            IOrderCodePersistencePort orderCodePersistencePort,
+            ISmsPersistencePort smsPersistencePort,
+            ICodeGeneratorPort codeGeneratorPort,
+            IUserPersistencePort userPersistencePort
+    ) {
+
+        return new OrderUseCase(
+                restaurantPersistencePort,
+                dishPersistencePort,
+                orderPersistencePort,
+                employeeRestaurantPersistencePort,
+                orderCodePersistencePort,
+                smsPersistencePort,
+                codeGeneratorPort,
+                userPersistencePort
+        );
     }
 
 }
