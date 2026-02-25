@@ -155,4 +155,31 @@ class OrderRestControllerTest {
         verifyNoMoreInteractions(orderHandler);
     }
 
+    @Test
+    @WithMockUser(authorities = "EMPLOYEE")
+    void shouldUpdateOrderStatusToReady() throws Exception {
+
+        Long userId = 5L;
+        Long orderId = 1L;
+
+        OrderResponseDto responseDto = new OrderResponseDto();
+        responseDto.setId(orderId);
+        responseDto.setStatus(OrderStatus.LISTO); // o el status que uses
+
+        when(orderHandler.updateStatusOrderReady(userId, orderId))
+                .thenReturn(responseDto);
+
+        mockMvc.perform(
+                        patch(BASE_URL + "/" + orderId + "/statusReady")
+                                .requestAttr("auth.userId", userId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+
+        verify(orderHandler)
+                .updateStatusOrderReady(userId, orderId);
+
+        verifyNoMoreInteractions(orderHandler);
+    }
+
 }

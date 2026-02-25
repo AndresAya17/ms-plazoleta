@@ -35,8 +35,6 @@ public class OrderUseCase implements IOrderServicePort {
         this.userPersistencePort = userPersistencePort;
     }
 
-    private final String phoneVirtual = "+18777804236";
-
     @Override
     public Order saveOrder(Order order, Long userId) {
         restaurantPersistencePort.findById(order.getRestaurantId())
@@ -108,7 +106,7 @@ public class OrderUseCase implements IOrderServicePort {
     @Override
     @Transactional
     public Order updateStatusReady(Long userId, Long orderId) {
-        // 1️⃣ Validar que el empleado pertenece a un restaurante
+        //Validar que el empleado pertenece a un restaurante
         Long restaurantId = employeeRestaurantPersistencePort
                 .findRestaurantIdByEmployeeUserId(userId)
                 .orElseThrow(() -> new DomainException(
@@ -116,7 +114,7 @@ public class OrderUseCase implements IOrderServicePort {
                         "Employee does not belong to any restaurant"
                 ));
 
-        // 2️⃣ Buscar la orden
+        //Buscar la orden
         Order order = orderPersistencePort.findById(orderId)
                 .orElseThrow(() -> new DomainException(
                         ErrorCode.DATA_NOT_FOUND,
@@ -125,7 +123,7 @@ public class OrderUseCase implements IOrderServicePort {
 
 
 
-        // 3️⃣ Validar que la orden pertenece al restaurante
+        //Validar que la orden pertenece al restaurante
         if (!order.getRestaurantId().equals(restaurantId)) {
             throw new DomainException(
                     ErrorCode.UNAUTHORIZED,
@@ -133,7 +131,7 @@ public class OrderUseCase implements IOrderServicePort {
             );
         }
 
-        // 4️⃣ Validar que el chef asignado es el mismo
+        //Validar que el chef asignado es el mismo
         if (!order.getChefId().equals(userId)) {
             throw new DomainException(
                     ErrorCode.UNAUTHORIZED,
@@ -143,16 +141,16 @@ public class OrderUseCase implements IOrderServicePort {
 
         String phone = userPersistencePort.getClientPhoneByUserId(order.getClientId());
 
-        // 5️⃣ Cambiar estado a LISTO
+        //Cambiar estado a LISTO
         OrderDomainValidator.markAsReady(order);
 
-        // 6️⃣ Desactivar códigos anteriores activos
+        //Desactivar códigos anteriores activos
         orderCodePersistencePort.deactivateByOrderId(orderId);
 
-        // 7️⃣ Generar código OTP
+        //Generar código OTP
         String rawCode = codeGeneratorPort.generateSixDigits();
 
-        // 9️⃣ Crear entidad de dominio DeliveryCode
+        //Crear entidad de dominio DeliveryCode
         DeliveryCode deliveryCode = new DeliveryCode(
                 orderId,
                 rawCode,
@@ -160,16 +158,16 @@ public class OrderUseCase implements IOrderServicePort {
                 true
         );
 
-        // 🔟 Persistir DeliveryCode
+        //Persistir DeliveryCode
         orderCodePersistencePort.saveCode(deliveryCode);
 
-        // 1️⃣1️⃣ Enviar SMS con código plano
+        //Enviar SMS con código plano
         smsPersistencePort.sendSms(
                 "+18777804236",
                 "Your delivery code is: " + rawCode
         );
 
-        // 1️⃣2️⃣ Persistir orden
+        //Persistir orden
         return orderPersistencePort.saveOrder(order);
     }
 }

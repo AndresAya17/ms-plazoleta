@@ -2,6 +2,7 @@ package com.pragma.plazoleta.infrastructure.out.jpa.entity;
 
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "delivery_code")
 @Setter
+@Getter
 public class DeliveryCodeEntity {
 
     @Id
