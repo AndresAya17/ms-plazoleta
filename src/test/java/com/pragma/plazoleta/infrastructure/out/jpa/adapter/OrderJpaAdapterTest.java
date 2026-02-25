@@ -1,5 +1,8 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
+import com.pragma.plazoleta.application.dto.response.ClientPhoneResponseDto;
+import com.pragma.plazoleta.domain.exception.DomainException;
+import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.Order;
 import com.pragma.plazoleta.domain.model.OrderStatus;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.OrderEntity;
@@ -14,6 +17,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +35,12 @@ public class OrderJpaAdapterTest {
 
     @Mock
     private IOrderEntityMapper orderEntityMapper;
+
+    @Mock
+    private RestTemplate restTemplate;
+
+    @InjectMocks
+    private UserJpaAdapter userJpaAdapter;
 
     @InjectMocks
     private OrderJpaAdapter orderJpaAdapter;
@@ -135,6 +148,67 @@ public class OrderJpaAdapterTest {
 
         verify(orderRepository).findById(orderId);
         verify(orderEntityMapper).toDomain(entity);
+    }
+
+    @Test
+    void shouldReturnPhoneWhenResponseIsValid() {
+
+        Long userId = 5L;
+
+        ClientPhoneResponseDto dto = new ClientPhoneResponseDto();
+        dto.setPhoneNumber("+573001234567");
+
+        ResponseEntity<ClientPhoneResponseDto> response =
+                new ResponseEntity<>(dto, HttpStatus.OK);
+
+        when(restTemplate.getForEntity(
+                anyString(),
+                eq(ClientPhoneResponseDto.class)
+        )).thenReturn(response);
+
+        String result = userJpaAdapter.getClientPhoneByUserId(userId);
+
+        assertEquals("+573001234567", result);
+    }
+
+    @Test
+    void shouldThrowWhenStatusIsNot2xx() {
+
+        Long userId = 5L;
+
+        ResponseEntity<ClientPhoneResponseDto> response =
+                new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+
+        when(restTemplate.getForEntity(
+                anyString(),
+                eq(ClientPhoneResponseDto.class)
+        )).thenReturn(response);
+
+        DomainException ex = assertThrows(
+                DomainException.class,
+                () -> userJpaAdapter.getClientPhoneByUserId(userId)
+        );
+
+        assertEquals(ErrorCode.EXTERNAL_SERVICE_ERROR, ex.getErrorCode());
+        assertEquals("Invalid response from user service", ex.getMessage());
+    }
+    @Test
+    void shouldThrowWhenRestClientExceptionOccurs() {
+
+        Long userId = 5L;
+
+        when(restTemplate.getForEntity(
+                anyString(),
+                eq(ClientPhoneResponseDto.class)
+        )).thenThrow(new RestClientException("Connection error"));
+
+        DomainException ex = assertThrows(
+                DomainException.class,
+                () -> userJpaAdapter.getClientPhoneByUserId(userId)
+        );
+
+        assertEquals(ErrorCode.EXTERNAL_SERVICE_ERROR, ex.getErrorCode());
+        assertEquals("Error communicating with user service", ex.getMessage());
     }
 
 }

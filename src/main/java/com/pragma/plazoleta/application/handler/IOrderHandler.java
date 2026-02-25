@@ -9,4 +9,5 @@ public interface IOrderHandler {
     OrderResponseDto saveOrder(CreateOrderRequestDto orderRequestDto, Long userId);
     PageResponseDto<ListOrderResponseDto> listOrderByStatus(Long userId, String status, int page, int size);
     OrderResponseDto updateStatusOrder(Long userId, Long orderId);
+    OrderResponseDto updateStatusOrderReady(Long userId, Long orderId);
 }
