@@ -37,13 +37,10 @@ public class RestaurantHandler implements IRestaurantHandler {
     }
 
     @Override
-    public List<RestaurantListResponseDto> listRestaurants(int page, int size) {
-        List<Restaurant> restaurants =
+    public PageResponseDto<RestaurantListResponseDto> listRestaurants(int page, int size) {
+        PageResult<Restaurant> restaurants =
                 restaurantServicePort.listRestaurants(page, size);
-
-        return restaurants.stream()
-                .map(restaurantListResponseMapper::toResponse)
-                .toList();
+        return restaurantResponseMapper.RestaurantToResponsePage(restaurants);
     }
 
     @Override

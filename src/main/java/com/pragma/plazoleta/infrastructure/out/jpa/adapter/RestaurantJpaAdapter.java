@@ -1,11 +1,13 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
+import com.pragma.plazoleta.domain.model.PageResult;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.RestaurantEntity;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IRestaurantEntityMapper;
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.IRestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
@@ -35,17 +37,23 @@ public class RestaurantJpaAdapter implements IRestaurantPersistencePort {
     }
 
     @Override
-    public List<Restaurant> listRestaurants(int page, int size) {
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by("name").ascending()
-        );
+    public PageResult<Restaurant> listRestaurants(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
 
-        return restaurantRepository.findAll(pageable)
-                .getContent()
-                .stream()
-                .map(restaurantEntityMapper::toRestaurant)
-                .toList();
+        Page<RestaurantEntity> pageResult =
+                restaurantRepository.findAllByOrderByNameAsc(pageable);
+
+        List<Restaurant> restaurants =
+                pageResult.getContent()
+                        .stream()
+                        .map(restaurantEntityMapper::toRestaurant)
+                        .toList();
+
+        return new PageResult<>(
+                restaurants,
+                pageResult.getNumber(),
+                pageResult.getSize(),
+                pageResult.getTotalElements()
+        );
     }
 }

@@ -4,11 +4,10 @@ import com.pragma.plazoleta.domain.api.IRestaurantServicePort;
 import com.pragma.plazoleta.domain.exception.DomainException;
 import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.EmployeeRestaurant;
+import com.pragma.plazoleta.domain.model.PageResult;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.domain.spi.IEmployeeRestaurantPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
-
-import java.util.List;
 
 public class RestaurantUseCase implements IRestaurantServicePort {
 
@@ -26,7 +25,7 @@ public class RestaurantUseCase implements IRestaurantServicePort {
     }
 
     @Override
-    public List<Restaurant> listRestaurants(int page, int size) {
+    public PageResult<Restaurant> listRestaurants(int page, int size) {
         return restaurantPersistencePort.listRestaurants(page, size);
     }
 

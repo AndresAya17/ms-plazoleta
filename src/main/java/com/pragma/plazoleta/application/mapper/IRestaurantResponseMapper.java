@@ -2,6 +2,7 @@ package com.pragma.plazoleta.application.mapper;
 
 import com.pragma.plazoleta.application.dto.response.DishResponseDto;
 import com.pragma.plazoleta.application.dto.response.PageResponseDto;
+import com.pragma.plazoleta.application.dto.response.RestaurantListResponseDto;
 import com.pragma.plazoleta.application.dto.response.RestaurantResponseDto;
 import com.pragma.plazoleta.domain.model.Dish;
 import com.pragma.plazoleta.domain.model.PageResult;
@@ -18,5 +19,8 @@ import org.mapstruct.ReportingPolicy;
 public interface IRestaurantResponseMapper {
     RestaurantResponseDto toResponse(Restaurant restaurant);
 
+    @Mapping(target = "hasNext", expression = "java(pageResult.hasNext())")
     PageResponseDto<DishResponseDto> toResponsePage(PageResult<Dish> pageResult);
+
+    PageResponseDto<RestaurantListResponseDto> RestaurantToResponsePage(PageResult<Restaurant> pageResult);
 }

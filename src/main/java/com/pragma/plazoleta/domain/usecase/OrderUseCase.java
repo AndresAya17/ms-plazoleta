@@ -65,7 +65,7 @@ public class OrderUseCase implements IOrderServicePort {
     }
 
     @Override
-    public Page<Order> listOrderByStatus(Long userId, String status, int page, int size) {
+    public PageResult<Order> listOrderByStatus(Long userId, String status, int page, int size) {
         Long restaurantId = employeeRestaurantPersistencePort
                 .findRestaurantIdByEmployeeUserId(userId)
                 .orElseThrow(() -> new DomainException(

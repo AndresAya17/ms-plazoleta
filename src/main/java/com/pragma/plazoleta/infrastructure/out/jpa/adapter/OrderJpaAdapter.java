@@ -2,6 +2,7 @@ package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
 import com.pragma.plazoleta.domain.model.Order;
 import com.pragma.plazoleta.domain.model.OrderStatus;
+import com.pragma.plazoleta.domain.model.PageResult;
 import com.pragma.plazoleta.domain.spi.IOrderPersistencePort;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.OrderEntity;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IOrderEntityMapper;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -32,8 +34,7 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
     }
 
     @Override
-    public Page<Order> findByRestaurantIdAndStatus(Long restaurantId, OrderStatus status, int page, int size) {
-
+    public PageResult<Order> findByRestaurantIdAndStatus(Long restaurantId, OrderStatus status, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
         Page<OrderEntity> orderEntities =
@@ -43,7 +44,17 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
                         pageable
                 );
 
-        return orderEntities.map(orderEntityMapper::toDomain);
+        List<Order> orders = orderEntities.getContent().
+                stream()
+                .map(orderEntityMapper::toDomain)
+                .toList();
+
+        return new PageResult<>(
+                orders,
+                orderEntities.getNumber(),
+                orderEntities.getSize(),
+                orderEntities.getTotalElements()
+        );
     }
 
     @Override

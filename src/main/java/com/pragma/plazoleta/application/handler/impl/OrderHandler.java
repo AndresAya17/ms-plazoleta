@@ -9,6 +9,7 @@ import com.pragma.plazoleta.application.mapper.IOrderRequestMapper;
 import com.pragma.plazoleta.application.mapper.IOrderResponseMapper;
 import com.pragma.plazoleta.domain.api.IOrderServicePort;
 import com.pragma.plazoleta.domain.model.Order;
+import com.pragma.plazoleta.domain.model.PageResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -35,26 +36,8 @@ public class OrderHandler implements IOrderHandler {
 
     @Override
     public PageResponseDto<ListOrderResponseDto> listOrderByStatus(Long userId, String status, int page, int size) {
-        Page<Order> orders = orderServicePort.listOrderByStatus(
-                userId,
-                status,
-                page,
-                size
-        );
-
-        List<ListOrderResponseDto> content =
-                orders.getContent()
-                        .stream()
-                        .map(orderResponseMapper::listToResponse)
-                        .toList();
-
-        return new PageResponseDto<>(
-                content,
-                orders.getNumber(),
-                orders.getSize(),
-                orders.getTotalElements(),
-                orders.getTotalPages()
-        );
+        PageResult<Order> orders = orderServicePort.listOrderByStatus(userId, status, page, size);
+        return orderResponseMapper.listToResponse(orders);
     }
 
     @Override
