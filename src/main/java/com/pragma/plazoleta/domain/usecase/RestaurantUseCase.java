@@ -1,6 +1,7 @@
 package com.pragma.plazoleta.domain.usecase;
 
 import com.pragma.plazoleta.domain.api.IRestaurantServicePort;
+import com.pragma.plazoleta.domain.constants.DomainConstants;
 import com.pragma.plazoleta.domain.exception.DomainException;
 import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.EmployeeRestaurant;
@@ -33,10 +34,10 @@ public class RestaurantUseCase implements IRestaurantServicePort {
     public void validateOwner(Long restaurantId, Long userId) {
         Restaurant restaurant = restaurantPersistencePort.findById(
                 restaurantId).orElseThrow(() ->
-                new DomainException(ErrorCode.DATA_NOT_FOUND, "Restaurant not found"));
+                new DomainException(ErrorCode.DATA_NOT_FOUND, DomainConstants.RNF));
 
         if(!restaurant.getOwnerId().equals(userId)){
-            throw new DomainException(ErrorCode.UNAUTHORIZED, "The user is not the owner of this restaurant");
+            throw new DomainException(ErrorCode.UNAUTHORIZED, DomainConstants.UNO);
         }
     }
 

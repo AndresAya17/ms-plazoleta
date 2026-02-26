@@ -1,6 +1,7 @@
 package com.pragma.plazoleta.domain.usecase;
 
 import com.pragma.plazoleta.domain.api.IOrderServicePort;
+import com.pragma.plazoleta.domain.constants.DomainConstants;
 import com.pragma.plazoleta.domain.exception.DomainException;
 import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.*;
@@ -44,19 +45,19 @@ public class OrderUseCase implements IOrderServicePort {
             Dish dish = dishPersistencePort.findById(item.getDishId())
                     .orElseThrow(() -> new DomainException(
                             ErrorCode.INVALID_DISH,
-                            "Dish not found"));
+                            DomainConstants.DNF));
 
             if(!dish.isActive()){
                 throw new DomainException(
                         ErrorCode.INVALID_DISH,
-                        "Dish is inactive"
+                        DomainConstants.DIA
                 );
             }
 
             if (!dish.getRestaurantId().equals(order.getRestaurantId())) {
                 throw new DomainException(
-                        ErrorCode.INVALID_DISH,
-                        "Dish does not belong to the restaurant"
+                        ErrorCode.DATA_NOT_FOUND,
+                        DomainConstants.DNF
                 );
             }
         }
@@ -69,7 +70,7 @@ public class OrderUseCase implements IOrderServicePort {
         Long restaurantId = employeeRestaurantPersistencePort
                 .findRestaurantIdByEmployeeUserId(userId)
                 .orElseThrow(() -> new DomainException(
-                        ErrorCode.DATA_NOT_FOUND, "Employee does not belong to any restaurant"
+                        ErrorCode.DATA_NOT_FOUND, DomainConstants.ENF
                 ));
 
         OrderStatus orderStatus = OrderStatus.from(status);
@@ -87,16 +88,16 @@ public class OrderUseCase implements IOrderServicePort {
         Long restaurantId = employeeRestaurantPersistencePort
                 .findRestaurantIdByEmployeeUserId(userId)
                 .orElseThrow(() -> new DomainException(
-                        ErrorCode.DATA_NOT_FOUND, "Employee does not belong to any restaurant"
+                        ErrorCode.DATA_NOT_FOUND, DomainConstants.ENF
                 ));
 
         Order order = orderPersistencePort.findById(orderId)
                 .orElseThrow(() -> new DomainException(
-                        ErrorCode.DATA_NOT_FOUND, "Order not found"
+                        ErrorCode.DATA_NOT_FOUND, DomainConstants.ONF
                 ));
 
         if(!order.getRestaurantId().equals(restaurantId)){
-            throw new DomainException(ErrorCode.UNAUTHORIZED, "The employee is not authorized to manage this order");
+            throw new DomainException(ErrorCode.UNAUTHORIZED, DomainConstants.NAE);
         }
         OrderDomainValidator.accept(order);
         order.setChefId(userId);
@@ -111,14 +112,14 @@ public class OrderUseCase implements IOrderServicePort {
                 .findRestaurantIdByEmployeeUserId(userId)
                 .orElseThrow(() -> new DomainException(
                         ErrorCode.DATA_NOT_FOUND,
-                        "Employee does not belong to any restaurant"
+                        DomainConstants.ENF
                 ));
 
         //Buscar la orden
         Order order = orderPersistencePort.findById(orderId)
                 .orElseThrow(() -> new DomainException(
                         ErrorCode.DATA_NOT_FOUND,
-                        "Order not found"
+                        DomainConstants.ONF
                 ));
 
 
@@ -127,7 +128,7 @@ public class OrderUseCase implements IOrderServicePort {
         if (!order.getRestaurantId().equals(restaurantId)) {
             throw new DomainException(
                     ErrorCode.UNAUTHORIZED,
-                    "The employee is not authorized to manage this order"
+                    DomainConstants.NAE
             );
         }
 
@@ -135,7 +136,7 @@ public class OrderUseCase implements IOrderServicePort {
         if (!order.getChefId().equals(userId)) {
             throw new DomainException(
                     ErrorCode.UNAUTHORIZED,
-                    "Employee is not assigned to this order"
+                    DomainConstants.NAE
             );
         }
 
