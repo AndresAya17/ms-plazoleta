@@ -1,17 +1,20 @@
 package com.pragma.plazoleta.application.handler;
 
 
+import com.pragma.plazoleta.application.dto.request.CreateEmployeeRestaurantRequestDto;
 import com.pragma.plazoleta.application.dto.request.RestaurantRequestDto;
 import com.pragma.plazoleta.application.dto.response.DishResponseDto;
 import com.pragma.plazoleta.application.dto.response.PageResponseDto;
 import com.pragma.plazoleta.application.dto.response.RestaurantListResponseDto;
 import com.pragma.plazoleta.application.handler.impl.RestaurantHandler;
+import com.pragma.plazoleta.application.mapper.IEmployeeRestaurantMapper;
 import com.pragma.plazoleta.application.mapper.IRestaurantListResponseMapper;
 import com.pragma.plazoleta.application.mapper.IRestaurantRequestMapper;
 import com.pragma.plazoleta.application.mapper.IRestaurantResponseMapper;
 import com.pragma.plazoleta.domain.api.IDishServicePort;
 import com.pragma.plazoleta.domain.api.IRestaurantServicePort;
 import com.pragma.plazoleta.domain.model.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -42,8 +45,13 @@ class RestaurantHandlerTest {
     @Mock
     private IRestaurantResponseMapper restaurantResponseMapper;
 
+    @Mock
+    private IEmployeeRestaurantMapper employeeRestaurantMapper;
+
     @InjectMocks
     private RestaurantHandler restaurantHandler;
+
+
 
     @Test
     void shouldMapDtoAndCallServiceWithUserIdAndRol() {
@@ -69,29 +77,50 @@ class RestaurantHandlerTest {
         int size = 10;
 
         Restaurant restaurant = new Restaurant();
+
+        PageResult<Restaurant> restaurantPage =
+                new PageResult<>(
+                        List.of(restaurant),
+                        page,
+                        size,
+                        1L
+                );
+
         RestaurantListResponseDto responseDto = new RestaurantListResponseDto();
         responseDto.setName("Pollos Popeye");
         responseDto.setLogoUrl("https://logopoll");
 
+        PageResponseDto<RestaurantListResponseDto> responsePage =
+                new PageResponseDto<>(
+                        List.of(responseDto),
+                        page,
+                        size,
+                        1L,
+                        1,
+                        false
+                );
+
         when(restaurantServicePort.listRestaurants(page, size))
-                .thenReturn(List.of(restaurant));
+                .thenReturn(restaurantPage);
 
-        when(restaurantListResponseMapper.toResponse(restaurant))
-                .thenReturn(responseDto);
+        when(restaurantResponseMapper.RestaurantToResponsePage(restaurantPage))
+                .thenReturn(responsePage);
 
-        List<RestaurantListResponseDto> result =
+        PageResponseDto<RestaurantListResponseDto> result =
                 restaurantHandler.listRestaurants(page, size);
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Pollos Popeye", result.get(0).getName());
-        assertEquals("https://logopoll", result.get(0).getLogoUrl());
+        assertEquals(1, result.getContent().size());
+        assertEquals("Pollos Popeye", result.getContent().get(0).getName());
+        assertEquals("https://logopoll", result.getContent().get(0).getLogoUrl());
 
         verify(restaurantServicePort, times(1))
                 .listRestaurants(page, size);
 
-        verify(restaurantListResponseMapper, times(1))
-                .toResponse(restaurant);
+        verify(restaurantResponseMapper, times(1))
+                .RestaurantToResponsePage(restaurantPage);
+
+        verifyNoMoreInteractions(restaurantServicePort, restaurantResponseMapper);
     }
 
     @Test
@@ -126,7 +155,8 @@ class RestaurantHandlerTest {
                         page,
                         size,
                         1L,
-                        1
+                        1,
+                        true
                 );
 
         when(dishServicePort.listDishesByRestaurant(
@@ -164,6 +194,37 @@ class RestaurantHandlerTest {
                 .toResponsePage(pageResult);
 
         verifyNoMoreInteractions(dishServicePort, restaurantResponseMapper);
+    }
+
+    @Test
+    @DisplayName("Debe delegar la validación del propietario al servicio")
+    void shouldCallValidateOwnerInServicePort() {
+
+        Long restaurantId = 1L;
+        Long userId = 10L;
+
+        restaurantHandler.validateOwner(restaurantId, userId);
+
+        verify(restaurantServicePort).validateOwner(restaurantId, userId);
+    }
+
+    @Test
+    @DisplayName("Debe asignar empleado a restaurante correctamente")
+    void shouldAssignEmployeeToRestaurant() {
+
+        CreateEmployeeRestaurantRequestDto request =
+                new CreateEmployeeRestaurantRequestDto();
+
+        EmployeeRestaurant employeeRestaurant =
+                new EmployeeRestaurant();
+
+        when(employeeRestaurantMapper.toEmployee(request))
+                .thenReturn(employeeRestaurant);
+
+        restaurantHandler.assignEmployeeToRestaurant(request);
+
+        verify(employeeRestaurantMapper).toEmployee(request);
+        verify(restaurantServicePort).assignEmployeeToRestaurant(employeeRestaurant);
     }
 
 }

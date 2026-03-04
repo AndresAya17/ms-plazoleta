@@ -7,7 +7,6 @@ import com.pragma.plazoleta.application.dto.response.PageResponseDto;
 import com.pragma.plazoleta.application.dto.response.RestaurantListResponseDto;
 import com.pragma.plazoleta.application.handler.IRestaurantHandler;
 import com.pragma.plazoleta.application.mapper.IEmployeeRestaurantMapper;
-import com.pragma.plazoleta.application.mapper.IRestaurantListResponseMapper;
 import com.pragma.plazoleta.application.mapper.IRestaurantRequestMapper;
 import com.pragma.plazoleta.application.mapper.IRestaurantResponseMapper;
 import com.pragma.plazoleta.domain.api.IDishServicePort;
@@ -17,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +24,6 @@ public class RestaurantHandler implements IRestaurantHandler {
     private final IRestaurantServicePort restaurantServicePort;
     private final IRestaurantRequestMapper restaurantRequestMapper;
     private final IRestaurantResponseMapper restaurantResponseMapper;
-    private final IRestaurantListResponseMapper restaurantListResponseMapper;
     private final IDishServicePort dishServicePort;
     private final IEmployeeRestaurantMapper employeeRestaurantMapper;
 

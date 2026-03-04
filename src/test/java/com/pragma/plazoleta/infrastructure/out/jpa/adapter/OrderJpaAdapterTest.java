@@ -5,6 +5,7 @@ import com.pragma.plazoleta.domain.exception.DomainException;
 import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.Order;
 import com.pragma.plazoleta.domain.model.OrderStatus;
+import com.pragma.plazoleta.domain.model.PageResult;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.OrderEntity;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.OrderItemEntity;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IOrderEntityMapper;
@@ -104,7 +105,7 @@ public class OrderJpaAdapterTest {
         when(orderEntityMapper.toDomain(entity))
                 .thenReturn(domainOrder);
 
-        Page<Order> result =
+        PageResult<Order> result =
                 orderJpaAdapter.findByRestaurantIdAndStatus(
                         restaurantId,
                         status,

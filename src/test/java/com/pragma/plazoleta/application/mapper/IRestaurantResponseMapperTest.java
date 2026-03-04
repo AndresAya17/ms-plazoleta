@@ -7,15 +7,25 @@ import com.pragma.plazoleta.domain.model.Dish;
 import com.pragma.plazoleta.domain.model.PageResult;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = {
+        IRestaurantResponseMapperImpl.class,
+        IDishResponseMapperImpl.class
+})
 class IRestaurantResponseMapperTest {
 
-    private final IRestaurantResponseMapper mapper =
-            Mappers.getMapper(IRestaurantResponseMapper.class);
+
+    @Autowired
+    private IRestaurantResponseMapper mapper;
 
     @Test
     void shouldMapRestaurantToResponseDto() {

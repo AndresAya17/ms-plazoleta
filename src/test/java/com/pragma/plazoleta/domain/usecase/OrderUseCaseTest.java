@@ -1,9 +1,11 @@
 package com.pragma.plazoleta.domain.usecase;
 
+import com.pragma.plazoleta.domain.constants.DomainConstants;
 import com.pragma.plazoleta.domain.exception.DomainException;
 import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.*;
 import com.pragma.plazoleta.domain.spi.*;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -199,8 +201,8 @@ class OrderUseCaseTest {
                 () -> orderUseCase.saveOrder(order, userId)
         );
 
-        assertEquals(ErrorCode.INVALID_DISH, exception.getErrorCode());
-        assertEquals("Dish does not belong to the restaurant", exception.getMessage());
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
+        assertEquals("Dish not found", exception.getMessage());
 
         verify(orderPersistencePort, never()).saveOrder(any());
     }
@@ -219,7 +221,7 @@ class OrderUseCaseTest {
         );
 
         assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
-        assertEquals("Employee does not belong to any restaurant", exception.getMessage());
+        assertEquals(DomainConstants.ENF, exception.getMessage());
 
         verify(employeeRestaurantPersistencePort)
                 .findRestaurantIdByEmployeeUserId(userId);
@@ -260,8 +262,13 @@ class OrderUseCaseTest {
         int size = 5;
 
         Order order = mock(Order.class);
-        Page<Order> pageResult =
-                new PageImpl<>(List.of(order));
+        PageResult<Order> pageResult =
+                new PageResult<>(
+                        List.of(order),
+                        page,
+                        size,
+                        1L
+                );
 
         when(employeeRestaurantPersistencePort
                 .findRestaurantIdByEmployeeUserId(userId))
@@ -276,7 +283,7 @@ class OrderUseCaseTest {
                 ))
                 .thenReturn(pageResult);
 
-        Page<Order> result =
+        PageResult<Order> result =
                 orderUseCase.listOrderByStatus(userId, status, page, size);
 
         assertEquals(1, result.getTotalElements());
@@ -478,7 +485,7 @@ class OrderUseCaseTest {
         );
 
         assertEquals(ErrorCode.UNAUTHORIZED, ex.getErrorCode());
-        assertEquals("The employee is not authorized to manage this order", ex.getMessage());
+        assertEquals("The employee is not allowed to manage this order", ex.getMessage());
     }
 
     @Test
@@ -502,7 +509,49 @@ class OrderUseCaseTest {
         );
 
         assertEquals(ErrorCode.UNAUTHORIZED, ex.getErrorCode());
-        assertEquals("Employee is not assigned to this order", ex.getMessage());
+        assertEquals("The employee is not allowed to manage this order", ex.getMessage());
+    }
+
+
+    @Test
+    @DisplayName("Debe lanzar excepción cuando el empleado no pertenece a un restaurante")
+    void shouldThrowExceptionWhenEmployeeNotBelongToRestaurant() {
+
+        Long userId = 1L;
+        Long orderId = 10L;
+
+        when(employeeRestaurantPersistencePort
+                .findRestaurantIdByEmployeeUserId(userId))
+                .thenReturn(Optional.empty());
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.updateStatusReady(userId, orderId)
+        );
+
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("Debe lanzar excepción cuando la orden no existe")
+    void shouldThrowExceptionWhenOrderNotFound() {
+
+        Long userId = 1L;
+        Long orderId = 10L;
+
+        when(employeeRestaurantPersistencePort
+                .findRestaurantIdByEmployeeUserId(userId))
+                .thenReturn(Optional.of(1L));
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.empty());
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.updateStatusReady(userId, orderId)
+        );
+
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
     }
 
 

@@ -7,7 +7,6 @@ import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.*;
 import com.pragma.plazoleta.domain.spi.*;
 import com.pragma.plazoleta.domain.validator.OrderDomainValidator;
-import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;

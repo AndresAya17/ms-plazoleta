@@ -1,11 +1,13 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.Setter;
 
 @Entity
 @Table(name = "category")
 @Setter
+@Getter
 public class CategoryEntity {
 
     @Id
