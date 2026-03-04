@@ -7,6 +7,7 @@ import com.pragma.plazoleta.domain.spi.IDishPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
 import com.pragma.plazoleta.domain.validator.DishDomainValidator;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -55,7 +56,7 @@ class DishUseCaseTest {
         );
         assertEquals(ErrorCode.FORBIDDEN, exception.getErrorCode());
         assertEquals(
-                "You are not allowed to create dishes for this restaurant",
+                "You are not allowed to manage dishes for this restaurant",
                 exception.getMessage()
         );
 
@@ -141,7 +142,7 @@ class DishUseCaseTest {
 
         assertEquals(ErrorCode.FORBIDDEN, exception.getErrorCode());
         assertEquals(
-                "You are not allowed to create dishes for this restaurant",
+                "You are not allowed to manage dishes for this restaurant",
                 exception.getMessage()
         );
 
@@ -194,7 +195,7 @@ class DishUseCaseTest {
 
         assertEquals(ErrorCode.FORBIDDEN, exception.getErrorCode());
         assertEquals(
-                "You are not allowed to create dishes for this restaurant",
+                "You are not allowed to manage dishes for this restaurant",
                 exception.getMessage()
         );
 
@@ -279,7 +280,7 @@ class DishUseCaseTest {
 
         assertEquals(ErrorCode.FORBIDDEN, exception.getErrorCode());
         assertEquals(
-                "You are not allowed to modify dishes of this restaurant",
+                "You are not allowed to manage dishes for this restaurant",
                 exception.getMessage()
         );
 
@@ -453,6 +454,33 @@ class DishUseCaseTest {
                 size,
                 categoryId
         );
+    }
+
+    @Test
+    @DisplayName("Debe lanzar excepción cuando el restaurante no existe")
+    void shouldThrowExceptionWhenRestaurantNotFound1() {
+
+        Long userId = 1L;
+
+        Category category = new Category(1L, "Entradas", "Categoria");
+
+        Dish dish = new Dish();
+        dish.setName("Pizza");
+        dish.setDescription("Pizza artesanal");
+        dish.setPrice(20000);
+        dish.setImageUrl("https://img.com/pizza.png");
+        dish.setRestaurantId(1L);
+        dish.setCategory(category);
+
+        when(restaurantPersistencePort.findById(1L))
+                .thenReturn(Optional.empty());
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> dishUseCase.saveDish(dish, userId)
+        );
+
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
     }
 
 

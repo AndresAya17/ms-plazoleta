@@ -1,8 +1,10 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
+import com.pragma.plazoleta.domain.model.PageResult;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.RestaurantEntity;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IRestaurantEntityMapper;
+import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IRestaurantPageMapper;
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.IRestaurantRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,6 +33,9 @@ public class RestaurantJpaAdapterTest {
 
     @InjectMocks
     private RestaurantJpaAdapter restaurantJpaAdapter;
+
+    @Mock
+    private IRestaurantPageMapper restaurantPageMapper;
 
     @Test
     void shouldSaveRestaurantAndReturnMappedRestaurant() {
@@ -107,47 +112,38 @@ public class RestaurantJpaAdapterTest {
         int page = 0;
         int size = 10;
 
-        RestaurantEntity entity = new RestaurantEntity();
-        entity.setId(1L);
-        entity.setName("Restaurante A");
-
         Restaurant restaurant = new Restaurant();
         restaurant.setId(1L);
         restaurant.setName("Restaurante A");
 
+        RestaurantEntity entity = new RestaurantEntity();
+        entity.setId(1L);
+        entity.setName("Restaurante A");
+
         Page<RestaurantEntity> entityPage =
                 new PageImpl<>(List.of(entity));
 
-        when(restaurantRepository.findAll(any(Pageable.class)))
+        when(restaurantRepository.findAllByOrderByNameAsc(any(Pageable.class)))
                 .thenReturn(entityPage);
 
-        when(restaurantEntityMapper.toRestaurant(entity))
-                .thenReturn(restaurant);
+        when(restaurantPageMapper.toDomain(any(), any()))
+                .thenReturn(new PageResult<>(List.of(restaurant), page, size, 1L));
 
         ArgumentCaptor<Pageable> pageableCaptor =
                 ArgumentCaptor.forClass(Pageable.class);
 
-        List<Restaurant> result =
+        PageResult<Restaurant> result =
                 restaurantJpaAdapter.listRestaurants(page, size);
 
         verify(restaurantRepository)
-                .findAll(pageableCaptor.capture());
+                .findAllByOrderByNameAsc(pageableCaptor.capture());
 
         Pageable pageableUsed = pageableCaptor.getValue();
 
         assertEquals(page, pageableUsed.getPageNumber());
         assertEquals(size, pageableUsed.getPageSize());
 
-        Sort.Order sortOrder =
-                pageableUsed.getSort().getOrderFor("name");
-
-        assertNotNull(sortOrder);
-        assertEquals(Sort.Direction.ASC, sortOrder.getDirection());
-
-        assertEquals(1, result.size());
-        assertEquals("Restaurante A", result.get(0).getName());
-
-        verify(restaurantEntityMapper).toRestaurant(entity);
+        assertEquals(1, result.getContent().size());
     }
 
 }

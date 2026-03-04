@@ -10,6 +10,7 @@ import com.pragma.plazoleta.application.mapper.IOrderResponseMapper;
 import com.pragma.plazoleta.domain.api.IOrderServicePort;
 import com.pragma.plazoleta.domain.model.Order;
 import com.pragma.plazoleta.domain.model.OrderStatus;
+import com.pragma.plazoleta.domain.model.PageResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -105,21 +106,35 @@ class OrderHandlerTest {
         order.setId(10L);
         order.setStatus(OrderStatus.PENDIENTE);
 
-        Page<Order> orderPage = new PageImpl<>(
+        PageResult<Order> orderPage = new PageResult<>(
                 List.of(order),
-                PageRequest.of(page, size),
-                1
-        );
+                page,
+                size,
+                1L);
 
         ListOrderResponseDto listDto = new ListOrderResponseDto();
         listDto.setId(10L);
         listDto.setStatus("PENDIENTE");
 
+        PageResponseDto<ListOrderResponseDto> responseDto =
+                new PageResponseDto<>(
+                        List.of(listDto),
+                        page,
+                        size,
+                        1L,
+                        1,
+                        false
+                );
+        responseDto.setContent(List.of(listDto));
+        responseDto.setPage(page);
+        responseDto.setSize(size);
+        responseDto.setTotalElements(1L);
+
         when(orderServicePort.listOrderByStatus(userId, status, page, size))
                 .thenReturn(orderPage);
 
-        when(orderResponseMapper.listToResponse(order))
-                .thenReturn(listDto);
+        when(orderResponseMapper.listToResponse(orderPage))
+                .thenReturn(responseDto);
 
         PageResponseDto<ListOrderResponseDto> result =
                 orderHandler.listOrderByStatus(userId, status, page, size);
@@ -127,14 +142,13 @@ class OrderHandlerTest {
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
         assertEquals(10L, result.getContent().get(0).getId());
-        assertEquals("PENDIENTE",
-                result.getContent().get(0).getStatus());
+        assertEquals("PENDIENTE", result.getContent().get(0).getStatus());
 
         verify(orderServicePort)
                 .listOrderByStatus(userId, status, page, size);
 
         verify(orderResponseMapper)
-                .listToResponse(order);
+                .listToResponse(orderPage);
 
         verifyNoMoreInteractions(orderServicePort, orderResponseMapper);
     }

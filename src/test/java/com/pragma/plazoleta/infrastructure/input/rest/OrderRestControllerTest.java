@@ -107,7 +107,8 @@ class OrderRestControllerTest {
                         page,
                         size,
                         1L,
-                        1
+                        1,
+                        true
                 );
 
         when(orderHandler.listOrderByStatus(userId, status, page, size))

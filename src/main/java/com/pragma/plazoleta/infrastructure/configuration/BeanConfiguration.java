@@ -10,10 +10,7 @@ import com.pragma.plazoleta.domain.usecase.RestaurantUseCase;
 import com.pragma.plazoleta.infrastructure.out.jpa.adapter.DishJpaAdapter;
 import com.pragma.plazoleta.infrastructure.out.jpa.adapter.OrderJpaAdapter;
 import com.pragma.plazoleta.infrastructure.out.jpa.adapter.RestaurantJpaAdapter;
-import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IDishEntityMapper;
-import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IDishPageMapper;
-import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IOrderEntityMapper;
-import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IRestaurantEntityMapper;
+import com.pragma.plazoleta.infrastructure.out.jpa.mapper.*;
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.IDishRepository;
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.IOrderRepository;
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.IRestaurantRepository;
@@ -32,12 +29,14 @@ public class BeanConfiguration {
     private final IDishPageMapper dishPageMapper;
     private final IOrderRepository orderRepository;
     private final IOrderEntityMapper orderEntityMapper;
+    private final IRestaurantPageMapper restaurantPageMapper;
 
     @Bean
     public IRestaurantPersistencePort restaurantPersistencePort() {
         return new RestaurantJpaAdapter(
                 restaurantRepository,
-                restaurantEntityMapper
+                restaurantEntityMapper,
+                restaurantPageMapper
         );
     }
 

@@ -69,6 +69,7 @@ class RestaurantRestControllerTest {
     }
 
     @Test
+    @WithMockUser(authorities = "CLIENT")
     void shouldListRestaurantsSuccessfully() throws Exception {
         int page = 0;
         int size = 10;
@@ -77,11 +78,21 @@ class RestaurantRestControllerTest {
         dto.setName("Restaurante Test");
         dto.setLogoUrl("https://logo.com/logo.png");
 
+        PageResponseDto<RestaurantListResponseDto> response =
+                new PageResponseDto<>(
+                        List.of(dto),
+                        page,
+                        size,
+                        1L,
+                        1,
+                        false
+                );
+
         when(restaurantHandler.listRestaurants(page, size))
-                .thenReturn(List.of(dto));
+                .thenReturn(response);
 
         mockMvc.perform(
-                        get(BASE_URL + "/restaurants")
+                        get("/api/v1/plazoleta/restaurant/restaurants")
                                 .param("page", String.valueOf(page))
                                 .param("size", String.valueOf(size))
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -112,7 +123,8 @@ class RestaurantRestControllerTest {
                         page,
                         size,
                         1L,
-                        1
+                        1,
+                        true
                 );
 
         when(restaurantHandler.listDish(page, size, restaurantId, null))

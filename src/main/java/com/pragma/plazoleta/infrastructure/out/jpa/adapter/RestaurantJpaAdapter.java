@@ -1,11 +1,14 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
+import com.pragma.plazoleta.domain.model.PageResult;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.RestaurantEntity;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IRestaurantEntityMapper;
+import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IRestaurantPageMapper;
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.IRestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
@@ -20,6 +23,7 @@ import java.util.Optional;
 public class RestaurantJpaAdapter implements IRestaurantPersistencePort {
     private final IRestaurantRepository restaurantRepository;
     private final IRestaurantEntityMapper restaurantEntityMapper;
+    private final IRestaurantPageMapper restaurantPageMapper;
 
     @Override
     public Restaurant saveRestaurant(Restaurant restaurant) {
@@ -35,17 +39,16 @@ public class RestaurantJpaAdapter implements IRestaurantPersistencePort {
     }
 
     @Override
-    public List<Restaurant> listRestaurants(int page, int size) {
-        Pageable pageable = PageRequest.of(
-                page,
-                size,
-                Sort.by("name").ascending()
-        );
+    public PageResult<Restaurant> listRestaurants(int page, int size) {
 
-        return restaurantRepository.findAll(pageable)
-                .getContent()
-                .stream()
-                .map(restaurantEntityMapper::toRestaurant)
-                .toList();
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<RestaurantEntity> pageResult =
+                restaurantRepository.findAllByOrderByNameAsc(pageable);
+
+        return restaurantPageMapper.toDomain(
+                pageResult,
+                restaurantEntityMapper
+        );
     }
 }

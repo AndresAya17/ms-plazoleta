@@ -183,8 +183,9 @@ public class DishJpaAdapterTest {
                         1L
                 );
 
-        when(dishRepository.findByRestaurantIdAndActiveTrue(
+        when(dishRepository.findByRestaurantAndOptionalCategory(
                 restaurantId,
+                null,
                 PageRequest.of(page, size)
         )).thenReturn(dishEntityPage);
 
@@ -204,57 +205,14 @@ public class DishJpaAdapterTest {
         assertThat(result.getContent().get(0).getName()).isEqualTo("Pasta");
 
         verify(dishRepository)
-                .findByRestaurantIdAndActiveTrue(
+                .findByRestaurantAndOptionalCategory(
                         restaurantId,
+                        null,
                         PageRequest.of(page, size)
                 );
         verify(dishPageMapper)
                 .toDomain(dishEntityPage, dishEntityMapper);
         verifyNoMoreInteractions(dishRepository, dishPageMapper);
-    }
-
-    @Test
-    void shouldFindDishesByRestaurantAndCategoryWhenCategoryIsProvided() {
-        Long restaurantId = 1L;
-        Long categoryId = 2L;
-        int page = 0;
-        int size = 10;
-
-        DishEntity entity = new DishEntity();
-        entity.setId(1L);
-
-        Page<DishEntity> entityPage =
-                new PageImpl<>(List.of(entity));
-
-        PageResult<Dish> pageResult =
-                new PageResult<>(List.of(new Dish()), page, size, 1L);
-
-        when(dishRepository.findByRestaurantIdAndCategory_IdAndActiveTrue(
-                eq(restaurantId),
-                eq(categoryId),
-                any(Pageable.class)
-        )).thenReturn(entityPage);
-
-        when(dishPageMapper.toDomain(entityPage, dishEntityMapper))
-                .thenReturn(pageResult);
-
-        PageResult<Dish> result =
-                dishJpaAdapter.findByRestaurant(restaurantId, page, size, categoryId);
-
-        verify(dishRepository)
-                .findByRestaurantIdAndCategory_IdAndActiveTrue(
-                        eq(restaurantId),
-                        eq(categoryId),
-                        any(Pageable.class)
-                );
-
-        verify(dishRepository, never())
-                .findByRestaurantIdAndActiveTrue(any(), any());
-
-        verify(dishPageMapper)
-                .toDomain(entityPage, dishEntityMapper);
-
-        assertEquals(1, result.getContent().size());
     }
 
 

@@ -4,6 +4,7 @@ package com.pragma.plazoleta.domain.usecase;
 import com.pragma.plazoleta.domain.exception.DomainException;
 import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.EmployeeRestaurant;
+import com.pragma.plazoleta.domain.model.PageResult;
 import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.domain.spi.IEmployeeRestaurantPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
@@ -43,18 +44,28 @@ class RestaurantUseCaseTest {
 
     @Test
     void shouldListRestaurantsWhenRoleIsClient() {
-        List<Restaurant> restaurants = List.of(new Restaurant());
+        int page = 0;
+        int size = 10;
 
-        when(restaurantPersistencePort.listRestaurants(0, 10))
+        PageResult<Restaurant> restaurants =
+                new PageResult<>(
+                        List.of(new Restaurant()),
+                        page,
+                        size,
+                        1L
+                );
+
+        when(restaurantPersistencePort.listRestaurants(page, size))
                 .thenReturn(restaurants);
 
-        List<Restaurant> result =
-                restaurantUseCase.listRestaurants(0, 10);
+        PageResult<Restaurant> result =
+                restaurantUseCase.listRestaurants(page, size);
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
 
-        verify(restaurantPersistencePort).listRestaurants(0, 10);
+        verify(restaurantPersistencePort)
+                .listRestaurants(page, size);
     }
     @Test
     void shouldThrowExceptionWhenRestaurantNotFound() {

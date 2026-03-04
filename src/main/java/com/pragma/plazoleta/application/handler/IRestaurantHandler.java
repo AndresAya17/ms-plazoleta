@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface IRestaurantHandler {
     void saveRestaurant(RestaurantRequestDto restaurantRequestDto);
-    List<RestaurantListResponseDto> listRestaurants(int page, int size);
+    PageResponseDto<RestaurantListResponseDto> listRestaurants(int page, int size);
     PageResponseDto<DishResponseDto> listDish(int page, int size, Long restaurantId, Long categoryId);
     void validateOwner(Long restaurantId, Long userId);
     void assignEmployeeToRestaurant(CreateEmployeeRestaurantRequestDto employeeRestaurantRequestDto);

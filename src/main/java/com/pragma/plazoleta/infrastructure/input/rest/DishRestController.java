@@ -4,6 +4,7 @@ import com.pragma.plazoleta.application.dto.request.DishRequestDto;
 import com.pragma.plazoleta.application.dto.request.UpdateDishRequestDto;
 import com.pragma.plazoleta.application.dto.request.UpdateDishStatusRequestDto;
 import com.pragma.plazoleta.application.handler.IDishHandler;
+import com.pragma.plazoleta.infrastructure.util.constants.SecurityConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -33,7 +34,7 @@ public class DishRestController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasAuthority('OWNER')")
+    @PreAuthorize(SecurityConstants.HAS_OWNER)
     @PostMapping("/")
     public ResponseEntity<Void> saveDish(
             @RequestAttribute("auth.userId") Long userId,
@@ -55,7 +56,7 @@ public class DishRestController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasAuthority('OWNER')")
+    @PreAuthorize(SecurityConstants.HAS_OWNER)
     @PatchMapping("/")
     public ResponseEntity<Void> updateDish(
             @RequestAttribute("auth.userId") Long userId,
@@ -77,7 +78,7 @@ public class DishRestController {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasAuthority('OWNER')")
+    @PreAuthorize(SecurityConstants.HAS_OWNER)
     @PatchMapping("/{id}/status")
     public ResponseEntity<Void> updateDishStatus(
             @PathVariable("id") Long dishId,
