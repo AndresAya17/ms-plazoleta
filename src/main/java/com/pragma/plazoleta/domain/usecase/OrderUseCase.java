@@ -10,6 +10,7 @@ import com.pragma.plazoleta.domain.validator.OrderDomainValidator;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class OrderUseCase implements IOrderServicePort {
 
@@ -38,7 +39,20 @@ public class OrderUseCase implements IOrderServicePort {
     @Override
     public Order saveOrder(Order order, Long userId) {
         restaurantPersistencePort.findById(order.getRestaurantId())
-                .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, "Restaurant not found"));
+                .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, DomainConstants.RNF));
+
+        boolean hasActiveOrder = orderPersistencePort.existsByClientIdAndStatusNotIn(
+                userId,
+                List.of(OrderStatus.CANCELADO, OrderStatus.ENTREGADO)
+        );
+
+        if (hasActiveOrder) {
+            throw new DomainException(
+                    ErrorCode.ORDER_ALREADY_EXISTS,
+                    DomainConstants.CAE
+            );
+        }
+
         for (OrderItem item : order.getItems()) {
 
             Dish dish = dishPersistencePort.findById(item.getDishId())
@@ -60,6 +74,7 @@ public class OrderUseCase implements IOrderServicePort {
                 );
             }
         }
+
         order.setClientId(userId);
         return orderPersistencePort.saveOrder(order);
     }

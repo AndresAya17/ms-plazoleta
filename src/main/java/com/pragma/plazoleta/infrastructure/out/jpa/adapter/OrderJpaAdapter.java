@@ -62,4 +62,9 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
         return orderRepository.findById(orderId)
                 .map(orderEntityMapper::toDomain);
     }
+
+    @Override
+    public boolean existsByClientIdAndStatusNotIn(Long clientId, List<OrderStatus> excludedStatuses) {
+        return orderRepository.existsByClientIdAndStatusNotIn(clientId, excludedStatuses);
+    }
 }
