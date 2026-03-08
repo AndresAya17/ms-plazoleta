@@ -554,8 +554,42 @@ class OrderUseCaseTest {
         assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
     }
 
+    @Test
+    void shouldThrowExceptionWhenClientAlreadyHasAnActiveOrder() {
+        Long userId = 1L;
+        Long restaurantId = 10L;
 
+        Order order = new Order(20L, 100L, List.of());
 
+        order.setRestaurantId(restaurantId);
+        order.setItems(List.of());
 
+        Restaurant restaurant = new Restaurant();
+        restaurant.setId(restaurantId);
+
+        when(restaurantPersistencePort.findById(restaurantId))
+                .thenReturn(Optional.of(restaurant));
+
+        when(orderPersistencePort.existsByClientIdAndStatusNotIn(
+                eq(userId),
+                eq(List.of(OrderStatus.CANCELADO, OrderStatus.ENTREGADO))
+        )).thenReturn(true);
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.saveOrder(order, userId)
+        );
+
+        assertEquals(ErrorCode.ORDER_ALREADY_EXISTS, exception.getErrorCode());
+        assertEquals("The client already has an active order", exception.getMessage());
+
+        verify(restaurantPersistencePort).findById(restaurantId);
+        verify(orderPersistencePort).existsByClientIdAndStatusNotIn(
+                eq(userId),
+                eq(List.of(OrderStatus.CANCELADO, OrderStatus.ENTREGADO))
+        );
+        verify(orderPersistencePort, never()).saveOrder(any(Order.class));
+        verifyNoInteractions(dishPersistencePort);
+    }
 
 }

@@ -19,5 +19,6 @@ public final class DomainConstants {
     public static final String NAR = "You are not allowed to manage dishes for this restaurant";
     public static final String NAE = "The employee is not allowed to manage this order";
     public static final String UNO = "The user is not the owner of this restaurant";
+    public static final String CAE = "The client already has an active order";
 
 }
