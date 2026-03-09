@@ -7,10 +7,12 @@ import com.pragma.plazoleta.domain.spi.*;
 import com.pragma.plazoleta.domain.usecase.DishUseCase;
 import com.pragma.plazoleta.domain.usecase.OrderUseCase;
 import com.pragma.plazoleta.domain.usecase.RestaurantUseCase;
+import com.pragma.plazoleta.infrastructure.out.jpa.adapter.DeliveryCodeJpaAdapter;
 import com.pragma.plazoleta.infrastructure.out.jpa.adapter.DishJpaAdapter;
 import com.pragma.plazoleta.infrastructure.out.jpa.adapter.OrderJpaAdapter;
 import com.pragma.plazoleta.infrastructure.out.jpa.adapter.RestaurantJpaAdapter;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.*;
+import com.pragma.plazoleta.infrastructure.out.jpa.repository.IDeliveryCodeRepository;
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.IDishRepository;
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.IOrderRepository;
 import com.pragma.plazoleta.infrastructure.out.jpa.repository.IRestaurantRepository;
@@ -30,6 +32,8 @@ public class BeanConfiguration {
     private final IOrderRepository orderRepository;
     private final IOrderEntityMapper orderEntityMapper;
     private final IRestaurantPageMapper restaurantPageMapper;
+    private final IDeliveryCodeRepository deliveryCodeRepository;
+    private final IDeliveryCodeEntityMapper deliveryCodeEntityMapper;
 
     @Bean
     public IRestaurantPersistencePort restaurantPersistencePort() {
@@ -61,6 +65,11 @@ public class BeanConfiguration {
     }
 
     @Bean
+    public IDeliveryCodePersistencePort deliveryCodePersistencePort(){
+        return new DeliveryCodeJpaAdapter(deliveryCodeRepository, deliveryCodeEntityMapper);
+    }
+
+    @Bean
     public IOrderServicePort orderServicePort(
             IRestaurantPersistencePort restaurantPersistencePort,
             IDishPersistencePort dishPersistencePort,
@@ -69,7 +78,8 @@ public class BeanConfiguration {
             IOrderCodePersistencePort orderCodePersistencePort,
             ISmsPersistencePort smsPersistencePort,
             ICodeGeneratorPort codeGeneratorPort,
-            IUserPersistencePort userPersistencePort
+            IUserPersistencePort userPersistencePort,
+            IDeliveryCodePersistencePort deliveryCodePersistencePort
     ) {
 
         return new OrderUseCase(
@@ -80,7 +90,8 @@ public class BeanConfiguration {
                 orderCodePersistencePort,
                 smsPersistencePort,
                 codeGeneratorPort,
-                userPersistencePort
+                userPersistencePort,
+                deliveryCodePersistencePort
         );
     }
 

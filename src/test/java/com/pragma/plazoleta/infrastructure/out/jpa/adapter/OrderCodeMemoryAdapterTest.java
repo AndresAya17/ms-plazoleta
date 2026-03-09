@@ -3,7 +3,7 @@ package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 import com.pragma.plazoleta.domain.model.DeliveryCode;
 import com.pragma.plazoleta.infrastructure.out.jpa.entity.DeliveryCodeEntity;
 import com.pragma.plazoleta.infrastructure.out.jpa.mapper.IDeliveryCodeEntityMapper;
-import com.pragma.plazoleta.infrastructure.out.jpa.repository.DeliveryCodeRepository;
+import com.pragma.plazoleta.infrastructure.out.jpa.repository.IDeliveryCodeRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -17,7 +17,7 @@ import static org.mockito.Mockito.*;
 class OrderCodeMemoryAdapterTest {
 
     @Mock
-    private DeliveryCodeRepository deliveryCodeRepository;
+    private IDeliveryCodeRepository IDeliveryCodeRepository;
 
     @Mock
     private IDeliveryCodeEntityMapper deliveryCodeEntityMapper;
@@ -34,7 +34,7 @@ class OrderCodeMemoryAdapterTest {
         when(deliveryCodeEntityMapper.toEntity(domain))
                 .thenReturn(entity);
 
-        when(deliveryCodeRepository.save(entity))
+        when(IDeliveryCodeRepository.save(entity))
                 .thenReturn(entity);
 
         when(deliveryCodeEntityMapper.toDomain(entity))
@@ -44,7 +44,7 @@ class OrderCodeMemoryAdapterTest {
 
         assertNotNull(result);
         verify(deliveryCodeEntityMapper).toEntity(domain);
-        verify(deliveryCodeRepository).save(entity);
+        verify(IDeliveryCodeRepository).save(entity);
         verify(deliveryCodeEntityMapper).toDomain(entity);
     }
 
@@ -56,7 +56,7 @@ class OrderCodeMemoryAdapterTest {
         DeliveryCodeEntity entity = new DeliveryCodeEntity();
         DeliveryCode domain = new DeliveryCode(orderId, "123456", null, true);
 
-        when(deliveryCodeRepository.findByOrderIdAndActiveTrue(orderId))
+        when(IDeliveryCodeRepository.findByOrderIdAndActiveTrue(orderId))
                 .thenReturn(Optional.of(entity));
 
         when(deliveryCodeEntityMapper.toDomain(entity))
@@ -68,7 +68,7 @@ class OrderCodeMemoryAdapterTest {
         assertTrue(result.isPresent());
         assertEquals(domain, result.get());
 
-        verify(deliveryCodeRepository)
+        verify(IDeliveryCodeRepository)
                 .findByOrderIdAndActiveTrue(orderId);
         verify(deliveryCodeEntityMapper)
                 .toDomain(entity);
@@ -79,7 +79,7 @@ class OrderCodeMemoryAdapterTest {
 
         Long orderId = 1L;
 
-        when(deliveryCodeRepository.findByOrderIdAndActiveTrue(orderId))
+        when(IDeliveryCodeRepository.findByOrderIdAndActiveTrue(orderId))
                 .thenReturn(Optional.empty());
 
         Optional<DeliveryCode> result =
@@ -87,7 +87,7 @@ class OrderCodeMemoryAdapterTest {
 
         assertTrue(result.isEmpty());
 
-        verify(deliveryCodeRepository)
+        verify(IDeliveryCodeRepository)
                 .findByOrderIdAndActiveTrue(orderId);
         verifyNoInteractions(deliveryCodeEntityMapper);
     }
@@ -99,7 +99,7 @@ class OrderCodeMemoryAdapterTest {
 
         adapter.deactivateByOrderId(orderId);
 
-        verify(deliveryCodeRepository)
+        verify(IDeliveryCodeRepository)
                 .deactivateByOrderId(orderId);
     }
 }

@@ -5,6 +5,7 @@ import com.pragma.plazoleta.domain.exception.DomainException;
 import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.*;
 import com.pragma.plazoleta.domain.spi.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,10 +46,14 @@ class OrderUseCaseTest {
     private ICodeGeneratorPort codeGeneratorPort;
 
     @Mock
+    private IDeliveryCodePersistencePort deliveryCodePersistencePort;
+
+    @Mock
     private IOrderCodePersistencePort orderCodePersistencePort;
 
     @InjectMocks
     private OrderUseCase orderUseCase;
+
 
     @Test
     void shouldSaveOrderSuccessfully() {
@@ -590,6 +596,256 @@ class OrderUseCaseTest {
         );
         verify(orderPersistencePort, never()).saveOrder(any(Order.class));
         verifyNoInteractions(dishPersistencePort);
+    }
+
+    @Test
+    void shouldThrowWhenOrderNotFound1() {
+        Long orderId = 1L;
+        Long userId = 10L;
+        String code = "123456";
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.empty());
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.updateStatusDelivery(code, userId, orderId)
+        );
+
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
+        assertEquals(DomainConstants.ONF, exception.getMessage());
+
+        verify(orderPersistencePort).findById(orderId);
+        verify(deliveryCodePersistencePort, never()).findByOrderId(anyLong());
+        verify(deliveryCodePersistencePort, never()).save(any());
+        verify(orderPersistencePort, never()).saveOrder(any());
+    }
+
+    @Test
+    void shouldThrowWhenDeliveryCodeNotFound() {
+        Long orderId = 1L;
+        Long userId = 10L;
+        String code = "123456";
+
+        Order order = new Order(userId,11L,List.of());
+        order.setId(orderId);
+        order.setChefId(userId);
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.of(order));
+
+        when(deliveryCodePersistencePort.findByOrderId(orderId))
+                .thenReturn(Optional.empty());
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.updateStatusDelivery(code, userId, orderId)
+        );
+
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
+        assertEquals(DomainConstants.DCNF, exception.getMessage());
+
+        verify(orderPersistencePort).findById(orderId);
+        verify(deliveryCodePersistencePort).findByOrderId(orderId);
+        verify(deliveryCodePersistencePort, never()).save(any());
+        verify(orderPersistencePort, never()).saveOrder(any());
+    }
+
+    @Test
+    void shouldThrowWhenChefIdIsNull() {
+        Long orderId = 1L;
+        Long userId = 10L;
+        String code = "123456";
+
+        Order order = new Order(userId,11L,List.of());
+        order.setId(orderId);
+        order.setChefId(userId);
+
+        DeliveryCode deliveryCode = new DeliveryCode(orderId,"202420",
+                LocalDateTime.now().plusMinutes(10),
+                true);
+
+        order.setChefId(null);
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.of(order));
+
+        when(deliveryCodePersistencePort.findByOrderId(orderId))
+                .thenReturn(Optional.of(deliveryCode));
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.updateStatusDelivery(code, userId, orderId)
+        );
+
+        assertEquals(ErrorCode.INVALID_EMPLOYEE, exception.getErrorCode());
+        assertEquals(DomainConstants.NAE, exception.getMessage());
+
+        verify(deliveryCodePersistencePort, never()).save(any());
+        verify(orderPersistencePort, never()).saveOrder(any());
+    }
+
+    @Test
+    void shouldThrowWhenChefIdDoesNotMatchUserId() {
+        Long orderId = 1L;
+        Long userId = 99L;
+        String code = "123456";
+
+        Order order = new Order(userId,11L,List.of());
+        order.setId(orderId);
+        order.setChefId(10L);
+
+        DeliveryCode deliveryCode = new DeliveryCode(orderId,code,
+                LocalDateTime.now().plusMinutes(10),
+                true);
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.of(order));
+
+        when(deliveryCodePersistencePort.findByOrderId(orderId))
+                .thenReturn(Optional.of(deliveryCode));
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.updateStatusDelivery(code, userId, orderId)
+        );
+
+        assertEquals(ErrorCode.INVALID_EMPLOYEE, exception.getErrorCode());
+        assertEquals(DomainConstants.NAE, exception.getMessage());
+
+        verify(deliveryCodePersistencePort, never()).save(any());
+        verify(orderPersistencePort, never()).saveOrder(any());
+    }
+
+    @Test
+    void shouldThrowWhenDeliveryCodeIsInactive() {
+        Long orderId = 1L;
+        Long userId = 10L;
+        String code = "123456";
+
+        Order order = new Order(userId,11L,List.of());
+        order.setId(orderId);
+        order.setChefId(userId);
+
+        DeliveryCode deliveryCode = new DeliveryCode(orderId,"202420",
+                LocalDateTime.now().plusMinutes(10),
+                true);
+
+        deliveryCode.setActive(false);
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.of(order));
+
+        when(deliveryCodePersistencePort.findByOrderId(orderId))
+                .thenReturn(Optional.of(deliveryCode));
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.updateStatusDelivery(code, userId, orderId)
+        );
+
+        assertEquals(ErrorCode.INVALID_CODE, exception.getErrorCode());
+        assertEquals(DomainConstants.IDC, exception.getMessage());
+
+        verify(deliveryCodePersistencePort, never()).save(any());
+        verify(orderPersistencePort, never()).saveOrder(any());
+    }
+
+    @Test
+    void shouldThrowWhenDeliveryCodeIsExpired() {
+        Long orderId = 1L;
+        Long userId = 10L;
+        String code = "123456";
+
+        Order order = new Order(userId,11L,List.of());
+        order.setId(orderId);
+        order.setChefId(userId);
+
+        DeliveryCode deliveryCode = new DeliveryCode(orderId,"202420",
+                LocalDateTime.now().plusMinutes(10),
+                true);
+
+        deliveryCode.setExpirationDate(LocalDateTime.now().minusMinutes(1));
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.of(order));
+
+        when(deliveryCodePersistencePort.findByOrderId(orderId))
+                .thenReturn(Optional.of(deliveryCode));
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.updateStatusDelivery(code, userId, orderId)
+        );
+
+        assertEquals(ErrorCode.INVALID_CODE, exception.getErrorCode());
+        assertEquals(DomainConstants.IDC, exception.getMessage());
+
+        verify(deliveryCodePersistencePort, never()).save(any());
+        verify(orderPersistencePort, never()).saveOrder(any());
+    }
+
+    @Test
+    void shouldThrowWhenCodeDoesNotMatch() {
+        Long orderId = 1L;
+        Long userId = 10L;
+        String code = "654321";
+
+        Order order = new Order(userId,11L,List.of());
+        order.setId(orderId);
+        order.setChefId(userId);
+
+        DeliveryCode deliveryCode = new DeliveryCode(orderId,"202420",
+                LocalDateTime.now().plusMinutes(10),
+                true);
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.of(order));
+
+        when(deliveryCodePersistencePort.findByOrderId(orderId))
+                .thenReturn(Optional.of(deliveryCode));
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.updateStatusDelivery(code, userId, orderId)
+        );
+
+        assertEquals(ErrorCode.INVALID_CODE, exception.getErrorCode());
+        assertEquals(DomainConstants.IDC, exception.getMessage());
+
+        verify(deliveryCodePersistencePort, never()).save(any());
+        verify(orderPersistencePort, never()).saveOrder(any());
+    }
+
+    @Test
+    void shouldUpdateStatusDeliverySuccessfully() {
+        Long orderId = 1L;
+        Long userId = 10L;
+        String code = "123456";
+
+        Order order = new Order(userId,11L,List.of());
+        order.setId(orderId);
+        order.setChefId(userId);
+        order.setStatus(OrderStatus.LISTO);
+
+        DeliveryCode deliveryCode = new DeliveryCode(orderId,code,
+                LocalDateTime.now().plusMinutes(10),
+                true);
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.of(order));
+
+        when(deliveryCodePersistencePort.findByOrderId(orderId))
+                .thenReturn(Optional.of(deliveryCode));
+
+        orderUseCase.updateStatusDelivery(code, userId, orderId);
+
+        assertFalse(deliveryCode.isActive());
+
+        verify(orderPersistencePort).findById(orderId);
+        verify(deliveryCodePersistencePort).findByOrderId(orderId);
+        verify(deliveryCodePersistencePort).save(deliveryCode);
+        verify(orderPersistencePort).saveOrder(order);
     }
 
 }
