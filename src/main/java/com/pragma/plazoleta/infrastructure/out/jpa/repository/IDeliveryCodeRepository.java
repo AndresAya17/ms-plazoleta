@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
-public interface DeliveryCodeRepository extends JpaRepository<DeliveryCodeEntity, Long> {
+public interface IDeliveryCodeRepository extends JpaRepository<DeliveryCodeEntity, Long> {
 
     Optional<DeliveryCodeEntity>
     findByOrderIdAndActiveTrue(Long orderId);
@@ -15,4 +15,6 @@ public interface DeliveryCodeRepository extends JpaRepository<DeliveryCodeEntity
     @Modifying
     @Query("UPDATE DeliveryCodeEntity d SET d.active = false WHERE d.orderId = :orderId AND d.active = true")
     void deactivateByOrderId(Long orderId);
+
+    Optional<DeliveryCodeEntity> findByOrderId(Long orderId);
 }

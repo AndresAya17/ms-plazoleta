@@ -7,6 +7,7 @@ import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.*;
 import com.pragma.plazoleta.domain.spi.*;
 import com.pragma.plazoleta.domain.validator.OrderDomainValidator;
+import com.pragma.plazoleta.infrastructure.out.jpa.entity.DeliveryCodeEntity;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -22,10 +23,12 @@ public class OrderUseCase implements IOrderServicePort {
     private final ISmsPersistencePort smsPersistencePort;
     private final ICodeGeneratorPort codeGeneratorPort;
     private final IUserPersistencePort userPersistencePort;
+    private final IDeliveryCodePersistencePort deliveryCodePersistencePort;
 
     public OrderUseCase(IRestaurantPersistencePort restaurantPersistencePort, IDishPersistencePort dishPersistencePort, IOrderPersistencePort orderPersistencePort,
                         IEmployeeRestaurantPersistencePort employeeRestaurantPersistencePort, IOrderCodePersistencePort orderCodePersistencePort,
-                        ISmsPersistencePort smsPersistencePort, ICodeGeneratorPort codeGeneratorPort, IUserPersistencePort userPersistencePort){
+                        ISmsPersistencePort smsPersistencePort, ICodeGeneratorPort codeGeneratorPort, IUserPersistencePort userPersistencePort,
+                        IDeliveryCodePersistencePort deliveryCodePersistencePort){
         this.restaurantPersistencePort = restaurantPersistencePort;
         this.dishPersistencePort = dishPersistencePort;
         this.orderPersistencePort = orderPersistencePort;
@@ -34,6 +37,7 @@ public class OrderUseCase implements IOrderServicePort {
         this.smsPersistencePort = smsPersistencePort;
         this.codeGeneratorPort = codeGeneratorPort;
         this.userPersistencePort = userPersistencePort;
+        this.deliveryCodePersistencePort = deliveryCodePersistencePort;
     }
 
     @Override
@@ -184,5 +188,53 @@ public class OrderUseCase implements IOrderServicePort {
 
         //Persistir orden
         return orderPersistencePort.saveOrder(order);
+    }
+
+    @Override
+    @Transactional
+    public void updateStatusDelivery(String code, Long userId, Long orderId) {
+        Order order = orderPersistencePort.findById(orderId)
+                .orElseThrow(() -> new DomainException(
+                        ErrorCode.DATA_NOT_FOUND,
+                        DomainConstants.ONF
+                ));
+
+        DeliveryCode deliveryCode = deliveryCodePersistencePort.findByOrderId(orderId)
+                .orElseThrow(() -> new DomainException(
+                        ErrorCode.DATA_NOT_FOUND,
+                        DomainConstants.DCNF));
+
+        if (order.getChefId() == null || !order.getChefId().equals(userId)) {
+            throw new DomainException(
+                    ErrorCode.INVALID_EMPLOYEE,
+                    DomainConstants.NAE
+            );
+        }
+
+        if (!deliveryCode.isActive()) {
+            throw new DomainException(
+                    ErrorCode.INVALID_CODE,
+                    DomainConstants.IDC
+            );
+        }
+
+        if (!deliveryCode.getExpirationDate().isAfter(LocalDateTime.now())) {
+            throw new DomainException(
+                    ErrorCode.INVALID_CODE,
+                    DomainConstants.IDC
+            );
+        }
+
+        if (!deliveryCode.getCodeHash().equals(code)) {
+            throw new DomainException(
+                    ErrorCode.INVALID_CODE,
+                    DomainConstants.IDC
+            );
+        }
+
+        OrderDomainValidator.deliver(order);
+        deliveryCode.setActive(false);
+        deliveryCodePersistencePort.save(deliveryCode);
+        orderPersistencePort.saveOrder(order);
     }
 }

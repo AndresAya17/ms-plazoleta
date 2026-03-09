@@ -51,4 +51,9 @@ public class OrderHandler implements IOrderHandler {
         Order orderSaved = orderServicePort.updateStatusReady(userId, orderId);
         return orderResponseMapper.toResponse(orderSaved);
     }
+
+    @Override
+    public void updateStatusOrderDelivery(String code, Long userId, Long orderId) {
+        orderServicePort.updateStatusDelivery(code,userId,orderId);
+    }
 }

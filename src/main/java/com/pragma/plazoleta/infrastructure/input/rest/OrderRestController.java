@@ -162,4 +162,14 @@ public class OrderRestController {
                 orderHandler.updateStatusOrderReady(userId, orderId)
         );
     }
+    @PreAuthorize(SecurityConstants.HAS_EMPLOYEE)
+    @PatchMapping("/{orderId}/statusDelivery")
+    public ResponseEntity<Void> updateStatusOrderDelivery(
+            @PathVariable Long orderId,
+            @RequestParam String code,
+            @RequestAttribute("auth.userId") Long userId){
+
+        orderHandler.updateStatusOrderDelivery(code, userId, orderId);
+        return ResponseEntity.ok().build();
+    }
 }

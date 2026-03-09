@@ -8,4 +8,5 @@ public interface IOrderServicePort {
     PageResult<Order> listOrderByStatus(Long userId, String status, int page, int size);
     Order updateStatus(Long userId, Long orderId);
     Order updateStatusReady(Long userId, Long orderId);
+    void updateStatusDelivery(String code, Long userId, Long orderId);
 }
