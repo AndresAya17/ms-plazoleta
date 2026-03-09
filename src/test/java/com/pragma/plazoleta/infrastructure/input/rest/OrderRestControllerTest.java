@@ -25,13 +25,11 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @WebMvcTest(
         controllers = OrderRestController.class,
@@ -179,6 +177,35 @@ class OrderRestControllerTest {
 
         verify(orderHandler)
                 .updateStatusOrderReady(userId, orderId);
+
+        verifyNoMoreInteractions(orderHandler);
+    }
+
+    @Test
+    @WithMockUser(authorities = "EMPLOYEE")
+    void shouldUpdateOrderStatusToDelivery() throws Exception {
+
+        Long userId = 5L;
+        Long orderId = 1L;
+        String code = "202420";
+
+        OrderResponseDto responseDto = new OrderResponseDto();
+        responseDto.setId(orderId);
+        responseDto.setStatus(OrderStatus.ENTREGADO); // o el status que uses
+
+        doNothing().when(orderHandler)
+                .updateStatusOrderDelivery(code, userId, orderId);
+
+        mockMvc.perform(
+                        patch(BASE_URL + "/" + orderId + "/statusDelivery")
+                                .param("code", code)
+                                .requestAttr("auth.userId", userId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+
+        verify(orderHandler)
+                .updateStatusOrderDelivery(code, userId, orderId);
 
         verifyNoMoreInteractions(orderHandler);
     }
