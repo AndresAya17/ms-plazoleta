@@ -210,4 +210,28 @@ class OrderRestControllerTest {
         verifyNoMoreInteractions(orderHandler);
     }
 
+    @Test
+    @WithMockUser(authorities = "CLIENT")
+    void shouldUpdateOrderStatusToCanceled() throws Exception {
+
+        Long userId = 5L;
+        Long orderId = 1L;
+
+
+        doNothing().when(orderHandler)
+                .updateStatusOrderCanceled(userId, orderId);
+
+        mockMvc.perform(
+                        patch(BASE_URL + "/" + orderId + "/statusCanceled")
+                                .requestAttr("auth.userId", userId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+
+        verify(orderHandler)
+                .updateStatusOrderCanceled(userId, orderId);
+
+        verifyNoMoreInteractions(orderHandler);
+    }
+
 }
