@@ -172,4 +172,13 @@ public class OrderRestController {
         orderHandler.updateStatusOrderDelivery(code, userId, orderId);
         return ResponseEntity.ok().build();
     }
+    @PreAuthorize(SecurityConstants.HAS_CLIENT)
+    @PatchMapping("/{orderId}/statusCanceled")
+    public ResponseEntity<Void> updateStatusOrderCanceled(
+            @PathVariable Long orderId,
+            @RequestAttribute("auth.userId") Long userId){
+
+        orderHandler.updateStatusOrderCanceled(userId, orderId);
+        return ResponseEntity.ok().build();
+    }
 }

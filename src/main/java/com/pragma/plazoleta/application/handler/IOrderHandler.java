@@ -11,4 +11,5 @@ public interface IOrderHandler {
     OrderResponseDto updateStatusOrder(Long userId, Long orderId);
     OrderResponseDto updateStatusOrderReady(Long userId, Long orderId);
     void updateStatusOrderDelivery(String code, Long userId, Long orderId);
+    void updateStatusOrderCanceled(Long userId, Long orderId);
 }

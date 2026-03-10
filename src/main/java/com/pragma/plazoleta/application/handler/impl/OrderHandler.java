@@ -56,4 +56,9 @@ public class OrderHandler implements IOrderHandler {
     public void updateStatusOrderDelivery(String code, Long userId, Long orderId) {
         orderServicePort.updateStatusDelivery(code,userId,orderId);
     }
+
+    @Override
+    public void updateStatusOrderCanceled(Long userId, Long orderId) {
+       orderServicePort.updateStatusCanceled(userId, orderId);
+    }
 }

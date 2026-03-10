@@ -7,7 +7,6 @@ import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.*;
 import com.pragma.plazoleta.domain.spi.*;
 import com.pragma.plazoleta.domain.validator.OrderDomainValidator;
-import com.pragma.plazoleta.infrastructure.out.jpa.entity.DeliveryCodeEntity;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -236,5 +235,33 @@ public class OrderUseCase implements IOrderServicePort {
         deliveryCode.setActive(false);
         deliveryCodePersistencePort.save(deliveryCode);
         orderPersistencePort.saveOrder(order);
+    }
+
+    @Override
+    @Transactional
+    public void updateStatusCanceled(Long userId, Long orderId) {
+        Order order = orderPersistencePort.findById(orderId)
+                .orElseThrow(() -> new DomainException(
+                        ErrorCode.DATA_NOT_FOUND,
+                        DomainConstants.ONF
+                ));
+
+        if(!order.getClientId().equals(userId)){
+            throw new DomainException(
+                    ErrorCode.INVALID_CLIENT,
+                    DomainConstants.ICP
+            );
+        }
+
+        try {
+            OrderDomainValidator.cancel(order);
+            orderPersistencePort.saveOrder(order);
+        } catch (DomainException ex) {
+            if (ErrorCode.INVALID_ORDER_STATE.equals(ex.getErrorCode())) {
+                smsPersistencePort.sendSms("+18777804236", ex.getMessage());
+            }
+            throw ex;
+        }
+
     }
 }
