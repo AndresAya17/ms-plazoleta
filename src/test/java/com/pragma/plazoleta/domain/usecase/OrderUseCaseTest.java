@@ -5,12 +5,15 @@ import com.pragma.plazoleta.domain.exception.DomainException;
 import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.model.*;
 import com.pragma.plazoleta.domain.spi.*;
+import com.pragma.plazoleta.domain.validator.OrderDomainValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -846,6 +849,155 @@ class OrderUseCaseTest {
         verify(deliveryCodePersistencePort).findByOrderId(orderId);
         verify(deliveryCodePersistencePort).save(deliveryCode);
         verify(orderPersistencePort).saveOrder(order);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenOrderNotFound2() {
+        Long userId = 1L;
+        Long orderId = 10L;
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.empty());
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.updateStatusCanceled(userId, orderId)
+        );
+
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
+        assertEquals(DomainConstants.ONF, exception.getMessage());
+
+        verify(orderPersistencePort).findById(orderId);
+        verify(orderPersistencePort, never()).saveOrder(any(Order.class));
+        verifyNoInteractions(smsPersistencePort);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenClientIsNotOwnerOfOrder() {
+        Long userId = 1L;
+        Long orderId = 10L;
+
+        Order order = new Order(1L,2L,List.of());
+        order.setId(orderId);
+        order.setClientId(99L);
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.of(order));
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.updateStatusCanceled(userId, orderId)
+        );
+
+        assertEquals(ErrorCode.INVALID_CLIENT, exception.getErrorCode());
+        assertEquals(DomainConstants.ICP, exception.getMessage());
+
+        verify(orderPersistencePort).findById(orderId);
+        verify(orderPersistencePort, never()).saveOrder(any(Order.class));
+        verifyNoInteractions(smsPersistencePort);
+    }
+
+    @Test
+    void shouldCancelOrderSuccessfully() {
+        Long userId = 1L;
+        Long orderId = 10L;
+
+        Order order = new Order(1L,2L, List.of());
+        order.setId(orderId);
+        order.setClientId(userId);
+        order.setStatus(OrderStatus.PENDIENTE);
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.of(order));
+
+        orderUseCase.updateStatusCanceled(userId, orderId);
+
+        verify(orderPersistencePort).findById(orderId);
+        verify(orderPersistencePort).saveOrder(order);
+        verifyNoInteractions(smsPersistencePort);
+
+        assertEquals(OrderStatus.CANCELADO, order.getStatus());
+    }
+
+    @Test
+    void shouldSendSmsAndRethrowExceptionWhenOrderStateIsInvalid() {
+        Long userId = 1L;
+        Long orderId = 10L;
+
+        Order order = new Order(1L,2L, List.of());
+        order.setId(orderId);
+        order.setClientId(userId);
+        order.setStatus(OrderStatus.EN_PREPARACION);
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.of(order));
+
+        try (MockedStatic<OrderDomainValidator> mockedValidator =
+                     Mockito.mockStatic(OrderDomainValidator.class)) {
+
+            DomainException domainException = new DomainException(
+                    ErrorCode.INVALID_ORDER_STATE,
+                    "Lo sentimos, tu pedido ya está en preparación y no puede cancelarse"
+            );
+
+            mockedValidator.when(() -> OrderDomainValidator.cancel(order))
+                    .thenThrow(domainException);
+
+            DomainException exception = assertThrows(
+                    DomainException.class,
+                    () -> orderUseCase.updateStatusCanceled(userId, orderId)
+            );
+
+            assertEquals(ErrorCode.INVALID_ORDER_STATE, exception.getErrorCode());
+            assertEquals(
+                    "Lo sentimos, tu pedido ya está en preparación y no puede cancelarse",
+                    exception.getMessage()
+            );
+
+            verify(orderPersistencePort).findById(orderId);
+            verify(orderPersistencePort, never()).saveOrder(any(Order.class));
+            verify(smsPersistencePort).sendSms(
+                    "+18777804236",
+                    "Lo sentimos, tu pedido ya está en preparación y no puede cancelarse"
+            );
+        }
+    }
+
+    @Test
+    void shouldRethrowExceptionWithoutSendingSmsWhenErrorCodeIsDifferentFromInvalidOrderState() {
+        Long userId = 1L;
+        Long orderId = 10L;
+
+        Order order = new Order(1L,2L, List.of());
+        order.setId(orderId);
+        order.setClientId(userId);
+
+        when(orderPersistencePort.findById(orderId))
+                .thenReturn(Optional.of(order));
+
+        try (MockedStatic<OrderDomainValidator> mockedValidator =
+                     Mockito.mockStatic(OrderDomainValidator.class)) {
+
+            DomainException domainException = new DomainException(
+                    ErrorCode.DATA_NOT_FOUND,
+                    "Otro error"
+            );
+
+            mockedValidator.when(() -> OrderDomainValidator.cancel(order))
+                    .thenThrow(domainException);
+
+            DomainException exception = assertThrows(
+                    DomainException.class,
+                    () -> orderUseCase.updateStatusCanceled(userId, orderId)
+            );
+
+            assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
+            assertEquals("Otro error", exception.getMessage());
+
+            verify(orderPersistencePort).findById(orderId);
+            verify(orderPersistencePort, never()).saveOrder(any(Order.class));
+            verifyNoInteractions(smsPersistencePort);
+        }
     }
 
 }

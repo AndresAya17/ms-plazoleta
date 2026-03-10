@@ -32,7 +32,7 @@ public class OrderDomainValidator {
 
     public static void cancel(Order order) {
         if (order.getStatus() != OrderStatus.PENDIENTE) {
-            throw new DomainException(ErrorCode.INVALID_ORDER_STATE, "Order cannot be cancelled");
+            throw new DomainException(ErrorCode.INVALID_ORDER_STATE, "Lo sentimos, tu pedido ya está en preparación y no puede cancelarse");
         }
         order.setStatus(OrderStatus.CANCELADO);
     }

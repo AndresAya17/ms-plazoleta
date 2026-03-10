@@ -22,5 +22,6 @@ public final class DomainConstants {
     public static final String CAE = "The client already has an active order";
     public static final String IDC = "Invalid delivery code";
     public static final String DCNF = "Delivery code not found for the order";
+    public static final String ICP = "This client is not authorized to cancel this order";
 
 }

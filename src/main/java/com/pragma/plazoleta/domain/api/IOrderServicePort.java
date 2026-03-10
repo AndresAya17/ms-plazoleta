@@ -9,4 +9,5 @@ public interface IOrderServicePort {
     Order updateStatus(Long userId, Long orderId);
     Order updateStatusReady(Long userId, Long orderId);
     void updateStatusDelivery(String code, Long userId, Long orderId);
+    void updateStatusCanceled(Long userId, Long orderId);
 }
