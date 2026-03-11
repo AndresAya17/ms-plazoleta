@@ -6,7 +6,7 @@ import com.pragma.plazoleta.application.dto.response.OrderResponseDto;
 import com.pragma.plazoleta.application.dto.response.PageResponseDto;
 
 public interface IOrderHandler {
-    OrderResponseDto saveOrder(CreateOrderRequestDto orderRequestDto, Long userId);
+    OrderResponseDto saveOrder(CreateOrderRequestDto orderRequestDto, Long userId, String email);
     PageResponseDto<ListOrderResponseDto> listOrderByStatus(Long userId, String status, int page, int size);
     OrderResponseDto updateStatusOrder(Long userId, Long orderId);
     OrderResponseDto updateStatusOrderReady(Long userId, Long orderId);

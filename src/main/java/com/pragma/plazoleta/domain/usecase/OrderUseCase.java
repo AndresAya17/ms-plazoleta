@@ -23,11 +23,12 @@ public class OrderUseCase implements IOrderServicePort {
     private final ICodeGeneratorPort codeGeneratorPort;
     private final IUserPersistencePort userPersistencePort;
     private final IDeliveryCodePersistencePort deliveryCodePersistencePort;
+    private final ITrazabilidadPersistencePort trazabilidadPersistencePort;
 
     public OrderUseCase(IRestaurantPersistencePort restaurantPersistencePort, IDishPersistencePort dishPersistencePort, IOrderPersistencePort orderPersistencePort,
                         IEmployeeRestaurantPersistencePort employeeRestaurantPersistencePort, IOrderCodePersistencePort orderCodePersistencePort,
                         ISmsPersistencePort smsPersistencePort, ICodeGeneratorPort codeGeneratorPort, IUserPersistencePort userPersistencePort,
-                        IDeliveryCodePersistencePort deliveryCodePersistencePort){
+                        IDeliveryCodePersistencePort deliveryCodePersistencePort, ITrazabilidadPersistencePort trazabilidadPersistencePort){
         this.restaurantPersistencePort = restaurantPersistencePort;
         this.dishPersistencePort = dishPersistencePort;
         this.orderPersistencePort = orderPersistencePort;
@@ -37,10 +38,11 @@ public class OrderUseCase implements IOrderServicePort {
         this.codeGeneratorPort = codeGeneratorPort;
         this.userPersistencePort = userPersistencePort;
         this.deliveryCodePersistencePort = deliveryCodePersistencePort;
+        this.trazabilidadPersistencePort = trazabilidadPersistencePort;
     }
 
     @Override
-    public Order saveOrder(Order order, Long userId) {
+    public Order saveOrder(Order order, Long userId, String email) {
         restaurantPersistencePort.findById(order.getRestaurantId())
                 .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, DomainConstants.RNF));
 
@@ -79,7 +81,22 @@ public class OrderUseCase implements IOrderServicePort {
         }
 
         order.setClientId(userId);
-        return orderPersistencePort.saveOrder(order);
+
+        Order order1 = orderPersistencePort.saveOrder(order);
+
+//        String employeeEmail = userPersistencePort.getEmployeeEmailByUserId(order1.getChefId());
+
+        Trazabilidad trazabilidad = new Trazabilidad();
+        trazabilidad.setOrderId(order1.getId());
+        trazabilidad.setClientId(String.valueOf(order1.getClientId()));
+        trazabilidad.setClientEmail(email);
+        trazabilidad.setDate(LocalDateTime.now());
+        trazabilidad.setPreviousStatus(DomainConstants.CREATED);
+        trazabilidad.setNewStatus(String.valueOf(order1.getStatus()));
+        trazabilidad.setEmployeeId(order1.getChefId());
+        trazabilidad.setEmployeeEmail(null);
+        trazabilidadPersistencePort.saveLog(trazabilidad);
+        return order1;
     }
 
     @Override

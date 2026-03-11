@@ -24,4 +24,5 @@ public final class DomainConstants {
     public static final String DCNF = "Delivery code not found for the order";
     public static final String ICP = "This client is not authorized to cancel this order";
 
+    public static final String CREATED = "CREADO";
 }

@@ -79,7 +79,8 @@ public class BeanConfiguration {
             ISmsPersistencePort smsPersistencePort,
             ICodeGeneratorPort codeGeneratorPort,
             IUserPersistencePort userPersistencePort,
-            IDeliveryCodePersistencePort deliveryCodePersistencePort
+            IDeliveryCodePersistencePort deliveryCodePersistencePort,
+            ITrazabilidadPersistencePort trazabilidadPersistencePort
     ) {
 
         return new OrderUseCase(
@@ -91,7 +92,8 @@ public class BeanConfiguration {
                 smsPersistencePort,
                 codeGeneratorPort,
                 userPersistencePort,
-                deliveryCodePersistencePort
+                deliveryCodePersistencePort,
+                trazabilidadPersistencePort
         );
     }
 

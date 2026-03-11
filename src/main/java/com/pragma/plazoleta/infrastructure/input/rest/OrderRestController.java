@@ -65,8 +65,9 @@ public class OrderRestController {
     @PostMapping("/")
     public ResponseEntity<OrderResponseDto> saveOrder(
             @RequestAttribute("auth.userId") Long userId,
+            @RequestAttribute("auth.email") String email,
             @Valid @RequestBody CreateOrderRequestDto orderRequestDto) {
-        orderHandler.saveOrder(orderRequestDto, userId);
+        orderHandler.saveOrder(orderRequestDto, userId, email);
         return new ResponseEntity<OrderResponseDto>(HttpStatus.CREATED);
     }
 
