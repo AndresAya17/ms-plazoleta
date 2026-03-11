@@ -163,6 +163,18 @@ public class OrderRestController {
                 orderHandler.updateStatusOrderReady(userId, orderId)
         );
     }
+    @Operation(
+            summary = "Marcar pedido como entregado",
+            description = "Permite a un empleado marcar un pedido como entregado ingresando el código de verificación asociado a la orden."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pedido marcado como entregado correctamente"),
+            @ApiResponse(responseCode = "400", description = "Código inválido, expirado o datos incorrectos"),
+            @ApiResponse(responseCode = "403", description = "El usuario no tiene permisos para realizar esta acción"),
+            @ApiResponse(responseCode = "404", description = "Pedido o código de entrega no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize(SecurityConstants.HAS_EMPLOYEE)
     @PatchMapping("/{orderId}/statusDelivery")
     public ResponseEntity<Void> updateStatusOrderDelivery(
@@ -173,6 +185,18 @@ public class OrderRestController {
         orderHandler.updateStatusOrderDelivery(code, userId, orderId);
         return ResponseEntity.ok().build();
     }
+    @Operation(
+            summary = "Marcar pedido como entregado",
+            description = "Permite a un empleado marcar un pedido como entregado ingresando el código de verificación asociado a la orden."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Pedido marcado como entregado correctamente"),
+            @ApiResponse(responseCode = "400", description = "Código inválido, expirado o datos incorrectos"),
+            @ApiResponse(responseCode = "403", description = "El usuario no tiene permisos para realizar esta acción"),
+            @ApiResponse(responseCode = "404", description = "Pedido o código de entrega no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize(SecurityConstants.HAS_CLIENT)
     @PatchMapping("/{orderId}/statusCanceled")
     public ResponseEntity<Void> updateStatusOrderCanceled(
