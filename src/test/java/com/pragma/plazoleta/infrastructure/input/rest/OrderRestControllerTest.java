@@ -58,6 +58,7 @@ class OrderRestControllerTest {
     @WithMockUser(authorities = "CLIENT")
     void shouldReturn201WhenOrderIsCreated() throws Exception {
         Long userId = 10L;
+        String email = "cliente@test.com";
 
         OrderItemRequestDto item = new OrderItemRequestDto();
         item.setDishId(1L);
@@ -69,19 +70,20 @@ class OrderRestControllerTest {
 
         OrderResponseDto responseDto = new OrderResponseDto();
 
-        when(orderHandler.saveOrder(any(CreateOrderRequestDto.class), eq(userId)))
+        when(orderHandler.saveOrder(any(CreateOrderRequestDto.class), eq(userId),eq(email)))
                 .thenReturn(responseDto);
 
         mockMvc.perform(
                         post(BASE_URL + "/")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .requestAttr("auth.userId", userId)
+                                .requestAttr("auth.email", email)
                                 .content(objectMapper.writeValueAsString(requestDto))
                 )
                 .andExpect(status().isCreated());
 
         verify(orderHandler)
-                .saveOrder(any(CreateOrderRequestDto.class), eq(userId));
+                .saveOrder(any(CreateOrderRequestDto.class), eq(userId),eq(email));
     }
 
     @Test

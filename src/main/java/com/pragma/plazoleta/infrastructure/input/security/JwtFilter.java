@@ -44,12 +44,14 @@ public class JwtFilter extends OncePerRequestFilter {
             if (valid) {
                 Long userId = persistencePort.getUserId(token);
                 String rol = persistencePort.getRol(token);
+                String email = persistencePort.getEmail(token);
 
 
                 request.setAttribute("auth.userId", userId);
+                request.setAttribute("auth.email", email);
 
                 System.out.println(
-                        "Request attributes set -> userId=" + userId + ", rol=" + rol
+                        "Request attributes set -> userId=" + userId + ", rol=" + rol + ", email=" + email
                 );
 
                 List<GrantedAuthority> authorities =

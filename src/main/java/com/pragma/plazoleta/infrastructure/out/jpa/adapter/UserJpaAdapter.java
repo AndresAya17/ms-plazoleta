@@ -1,6 +1,7 @@
 package com.pragma.plazoleta.infrastructure.out.jpa.adapter;
 
 import com.pragma.plazoleta.application.dto.response.ClientPhoneResponseDto;
+import com.pragma.plazoleta.application.dto.response.EmployeeEmailResponseDto;
 import com.pragma.plazoleta.domain.exception.DomainException;
 import com.pragma.plazoleta.domain.exception.ErrorCode;
 import com.pragma.plazoleta.domain.spi.IUserPersistencePort;
@@ -39,6 +40,33 @@ public class UserJpaAdapter implements IUserPersistencePort {
             }
 
             return response.getBody().getPhoneNumber();
+
+        } catch (RestClientException ex) {
+            throw new DomainException(
+                    ErrorCode.EXTERNAL_SERVICE_ERROR,
+                    "Error communicating with user service"
+            );
+        }
+    }
+
+    @Override
+    public String getEmailByUserId(Long userId) {
+        String url = userServiceUrl +
+                "/api/v1/user/employee/" + userId + "/email";
+
+        try {
+
+            ResponseEntity<EmployeeEmailResponseDto> response =
+                    restTemplate.getForEntity(url, EmployeeEmailResponseDto.class);
+
+            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+                throw new DomainException(
+                        ErrorCode.EXTERNAL_SERVICE_ERROR,
+                        "Invalid response from user service"
+                );
+            }
+
+            return response.getBody().getEmail();
 
         } catch (RestClientException ex) {
             throw new DomainException(

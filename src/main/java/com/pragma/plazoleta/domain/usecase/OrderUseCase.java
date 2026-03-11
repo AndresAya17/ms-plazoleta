@@ -23,11 +23,12 @@ public class OrderUseCase implements IOrderServicePort {
     private final ICodeGeneratorPort codeGeneratorPort;
     private final IUserPersistencePort userPersistencePort;
     private final IDeliveryCodePersistencePort deliveryCodePersistencePort;
+    private final ITrazabilidadPersistencePort trazabilidadPersistencePort;
 
     public OrderUseCase(IRestaurantPersistencePort restaurantPersistencePort, IDishPersistencePort dishPersistencePort, IOrderPersistencePort orderPersistencePort,
                         IEmployeeRestaurantPersistencePort employeeRestaurantPersistencePort, IOrderCodePersistencePort orderCodePersistencePort,
                         ISmsPersistencePort smsPersistencePort, ICodeGeneratorPort codeGeneratorPort, IUserPersistencePort userPersistencePort,
-                        IDeliveryCodePersistencePort deliveryCodePersistencePort){
+                        IDeliveryCodePersistencePort deliveryCodePersistencePort, ITrazabilidadPersistencePort trazabilidadPersistencePort){
         this.restaurantPersistencePort = restaurantPersistencePort;
         this.dishPersistencePort = dishPersistencePort;
         this.orderPersistencePort = orderPersistencePort;
@@ -37,10 +38,11 @@ public class OrderUseCase implements IOrderServicePort {
         this.codeGeneratorPort = codeGeneratorPort;
         this.userPersistencePort = userPersistencePort;
         this.deliveryCodePersistencePort = deliveryCodePersistencePort;
+        this.trazabilidadPersistencePort = trazabilidadPersistencePort;
     }
 
     @Override
-    public Order saveOrder(Order order, Long userId) {
+    public Order saveOrder(Order order, Long userId, String email) {
         restaurantPersistencePort.findById(order.getRestaurantId())
                 .orElseThrow(() -> new DomainException(ErrorCode.DATA_NOT_FOUND, DomainConstants.RNF));
 
@@ -79,7 +81,20 @@ public class OrderUseCase implements IOrderServicePort {
         }
 
         order.setClientId(userId);
-        return orderPersistencePort.saveOrder(order);
+
+        Order order1 = orderPersistencePort.saveOrder(order);
+
+        Trazabilidad trazabilidad = new Trazabilidad();
+        trazabilidad.setOrderId(order1.getId());
+        trazabilidad.setClientId(String.valueOf(order1.getClientId()));
+        trazabilidad.setClientEmail(email);
+        trazabilidad.setDate(LocalDateTime.now());
+        trazabilidad.setPreviousStatus(DomainConstants.CREATED);
+        trazabilidad.setNewStatus(String.valueOf(order1.getStatus()));
+        trazabilidad.setEmployeeId(null);
+        trazabilidad.setEmployeeEmail(null);
+        trazabilidadPersistencePort.saveLog(trazabilidad);
+        return order1;
     }
 
     @Override
@@ -116,9 +131,29 @@ public class OrderUseCase implements IOrderServicePort {
         if(!order.getRestaurantId().equals(restaurantId)){
             throw new DomainException(ErrorCode.UNAUTHORIZED, DomainConstants.NAE);
         }
+
+        String clientEmail = userPersistencePort.getEmailByUserId(order.getClientId());
+
+        Trazabilidad trazabilidad = new Trazabilidad();
+        trazabilidad.setOrderId(order.getId());
+        trazabilidad.setClientId(String.valueOf(order.getClientId()));
+        trazabilidad.setClientEmail(clientEmail);
+        trazabilidad.setDate(LocalDateTime.now());
+        trazabilidad.setPreviousStatus(order.getStatus().toString());
+
         OrderDomainValidator.accept(order);
         order.setChefId(userId);
-        return orderPersistencePort.saveOrder(order);
+
+        Order order1 = orderPersistencePort.saveOrder(order);
+
+        String employeeEmail = userPersistencePort.getEmailByUserId(order1.getChefId());
+
+        trazabilidad.setNewStatus(String.valueOf(order1.getStatus()));
+        trazabilidad.setEmployeeId(order1.getChefId());
+        trazabilidad.setEmployeeEmail(employeeEmail);
+        trazabilidadPersistencePort.saveLog(trazabilidad);
+
+        return order1;
     }
 
     @Override
@@ -138,7 +173,7 @@ public class OrderUseCase implements IOrderServicePort {
                         ErrorCode.DATA_NOT_FOUND,
                         DomainConstants.ONF
                 ));
-
+        String previousStatus = order.getStatus().toString();
 
 
         //Validar que la orden pertenece al restaurante
@@ -185,7 +220,19 @@ public class OrderUseCase implements IOrderServicePort {
                 "Your delivery code is: " + rawCode
         );
 
-        //Persistir orden
+        String clientEmail = userPersistencePort.getEmailByUserId(order.getClientId());
+        String employeeEmail = userPersistencePort.getEmailByUserId(order.getChefId());
+
+        Trazabilidad trazabilidad = new Trazabilidad();
+        trazabilidad.setOrderId(order.getId());
+        trazabilidad.setClientId(String.valueOf(order.getClientId()));
+        trazabilidad.setClientEmail(clientEmail);
+        trazabilidad.setDate(LocalDateTime.now());
+        trazabilidad.setPreviousStatus(previousStatus);
+        trazabilidad.setNewStatus(order.getStatus().toString());
+        trazabilidad.setEmployeeId(order.getChefId());
+        trazabilidad.setEmployeeEmail(employeeEmail);
+        trazabilidadPersistencePort.saveLog(trazabilidad);
         return orderPersistencePort.saveOrder(order);
     }
 
@@ -197,6 +244,8 @@ public class OrderUseCase implements IOrderServicePort {
                         ErrorCode.DATA_NOT_FOUND,
                         DomainConstants.ONF
                 ));
+
+        String previousStatus = order.getStatus().toString();
 
         DeliveryCode deliveryCode = deliveryCodePersistencePort.findByOrderId(orderId)
                 .orElseThrow(() -> new DomainException(
@@ -234,6 +283,21 @@ public class OrderUseCase implements IOrderServicePort {
         OrderDomainValidator.deliver(order);
         deliveryCode.setActive(false);
         deliveryCodePersistencePort.save(deliveryCode);
+
+        String clientEmail = userPersistencePort.getEmailByUserId(order.getClientId());
+        String employeeEmail = userPersistencePort.getEmailByUserId(order.getChefId());
+
+        Trazabilidad trazabilidad = new Trazabilidad();
+        trazabilidad.setOrderId(order.getId());
+        trazabilidad.setClientId(String.valueOf(order.getClientId()));
+        trazabilidad.setClientEmail(clientEmail);
+        trazabilidad.setDate(LocalDateTime.now());
+        trazabilidad.setPreviousStatus(previousStatus);
+        trazabilidad.setNewStatus(order.getStatus().toString());
+        trazabilidad.setEmployeeId(order.getChefId());
+        trazabilidad.setEmployeeEmail(employeeEmail);
+        trazabilidadPersistencePort.saveLog(trazabilidad);
+
         orderPersistencePort.saveOrder(order);
     }
 
@@ -246,6 +310,8 @@ public class OrderUseCase implements IOrderServicePort {
                         DomainConstants.ONF
                 ));
 
+        String previousStatus = order.getStatus().toString();
+
         if(!order.getClientId().equals(userId)){
             throw new DomainException(
                     ErrorCode.INVALID_CLIENT,
@@ -255,6 +321,21 @@ public class OrderUseCase implements IOrderServicePort {
 
         try {
             OrderDomainValidator.cancel(order);
+
+            String clientEmail = userPersistencePort.getEmailByUserId(order.getClientId());
+            String employeeEmail = userPersistencePort.getEmailByUserId(order.getChefId());
+
+            Trazabilidad trazabilidad = new Trazabilidad();
+            trazabilidad.setOrderId(order.getId());
+            trazabilidad.setClientId(String.valueOf(order.getClientId()));
+            trazabilidad.setClientEmail(clientEmail);
+            trazabilidad.setDate(LocalDateTime.now());
+            trazabilidad.setPreviousStatus(previousStatus);
+            trazabilidad.setNewStatus(order.getStatus().toString());
+            trazabilidad.setEmployeeId(order.getChefId());
+            trazabilidad.setEmployeeEmail(employeeEmail);
+            trazabilidadPersistencePort.saveLog(trazabilidad);
+
             orderPersistencePort.saveOrder(order);
         } catch (DomainException ex) {
             if (ErrorCode.INVALID_ORDER_STATE.equals(ex.getErrorCode())) {

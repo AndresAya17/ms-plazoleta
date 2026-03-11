@@ -10,6 +10,11 @@ sms:
   service:
     url: http://localhost:8082
 
+
+trazabilidad:
+  service:
+    url: http://localhost:8083
+
 spring:
   datasource:
     url: jdbc:mysql://localhost:3307/plazoleta

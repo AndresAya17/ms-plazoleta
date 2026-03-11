@@ -44,6 +44,8 @@ class OrderHandlerTest {
     void shouldSaveOrderSuccessfully() {
         Long userId = 1L;
 
+        String email = "andresaya@gmail.com";
+
         CreateOrderRequestDto requestDto = new CreateOrderRequestDto();
         requestDto.setRestaurantId(1L);
         requestDto.setItems(List.of());
@@ -71,21 +73,21 @@ class OrderHandlerTest {
         when(requestMapper.toOrder(requestDto))
                 .thenReturn(order);
 
-        when(orderServicePort.saveOrder(order, userId))
+        when(orderServicePort.saveOrder(order, userId, email))
                 .thenReturn(savedOrder);
 
         when(orderResponseMapper.toResponse(savedOrder))
                 .thenReturn(responseDto);
 
         OrderResponseDto result =
-                orderHandler.saveOrder(requestDto, userId);
+                orderHandler.saveOrder(requestDto, userId, email);
 
         assertNotNull(result);
         assertEquals(10L, result.getId());
         assertEquals(OrderStatus.PENDIENTE, result.getStatus());
 
         verify(requestMapper).toOrder(requestDto);
-        verify(orderServicePort).saveOrder(order, userId);
+        verify(orderServicePort).saveOrder(order, userId, email);
         verify(orderResponseMapper).toResponse(savedOrder);
         verifyNoMoreInteractions(
                 requestMapper,

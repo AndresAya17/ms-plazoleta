@@ -59,4 +59,14 @@ public class JwtAdapter implements IJwtPersistencePort {
                 .getBody()
                 .get("rol", String.class);
     }
+
+    @Override
+    public String getEmail(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secret.getBytes())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("email", String.class);
+    }
 }

@@ -8,4 +8,6 @@ public interface IJwtPersistencePort {
     Long getUserId(String token);
 
     String getRol(String token);
+
+    String getEmail(String token);
 }
