@@ -50,7 +50,7 @@ public class UserJpaAdapter implements IUserPersistencePort {
     }
 
     @Override
-    public String getEmployeeEmailByUserId(Long userId) {
+    public String getEmailByUserId(Long userId) {
         String url = userServiceUrl +
                 "/api/v1/user/employee/" + userId + "/email";
 

@@ -4,5 +4,5 @@ public interface IUserPersistencePort {
 
     String getClientPhoneByUserId(Long userId);
 
-    String getEmployeeEmailByUserId(Long userId);
+    String getEmailByUserId(Long userId);
 }
