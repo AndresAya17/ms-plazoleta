@@ -54,6 +54,10 @@ class OrderUseCaseTest {
     @Mock
     private IOrderCodePersistencePort orderCodePersistencePort;
 
+    @Mock
+    private ITrazabilidadPersistencePort trazabilidadPersistencePort;
+
+
     @InjectMocks
     private OrderUseCase orderUseCase;
 
@@ -72,6 +76,8 @@ class OrderUseCaseTest {
                 List.of(item)
         );
 
+        String email = "andresaya@gmail.com";
+
         Restaurant restaurant = new Restaurant();
         restaurant.setId(restaurantId);
 
@@ -89,7 +95,7 @@ class OrderUseCaseTest {
         when(orderPersistencePort.saveOrder(order))
                 .thenReturn(order);
 
-        Order result = orderUseCase.saveOrder(order, userId);
+        Order result = orderUseCase.saveOrder(order, userId, email);
 
         assertNotNull(result);
         assertEquals(userId, order.getClientId());
@@ -101,6 +107,7 @@ class OrderUseCaseTest {
     void shouldThrowExceptionWhenRestaurantNotFound() {
         Long userId = 10L;
         Long restaurantId = 1L;
+        String email = "andresaya@gmail.com";
 
         OrderItem item = new OrderItem(5L, 1);
         Order order = new Order(null, restaurantId, List.of(item));
@@ -110,7 +117,7 @@ class OrderUseCaseTest {
 
         DomainException exception = assertThrows(
                 DomainException.class,
-                () -> orderUseCase.saveOrder(order, userId)
+                () -> orderUseCase.saveOrder(order, userId, email)
         );
 
         assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
@@ -124,6 +131,7 @@ class OrderUseCaseTest {
         Long userId = 10L;
         Long restaurantId = 1L;
         Long dishId = 5L;
+        String email = "andresaya@gmail.com";
 
         OrderItem item = new OrderItem(dishId, 1);
         Order order = new Order(null, restaurantId, List.of(item));
@@ -139,7 +147,7 @@ class OrderUseCaseTest {
 
         DomainException exception = assertThrows(
                 DomainException.class,
-                () -> orderUseCase.saveOrder(order, userId)
+                () -> orderUseCase.saveOrder(order, userId, email)
         );
 
         assertEquals(ErrorCode.INVALID_DISH, exception.getErrorCode());
@@ -153,6 +161,7 @@ class OrderUseCaseTest {
         Long userId = 10L;
         Long restaurantId = 1L;
         Long dishId = 5L;
+        String email = "andresaya@gmail.com";
 
         OrderItem item = new OrderItem(dishId, 1);
         Order order = new Order(null, restaurantId, List.of(item));
@@ -173,7 +182,7 @@ class OrderUseCaseTest {
 
         DomainException exception = assertThrows(
                 DomainException.class,
-                () -> orderUseCase.saveOrder(order, userId)
+                () -> orderUseCase.saveOrder(order, userId, email)
         );
 
         assertEquals(ErrorCode.INVALID_DISH, exception.getErrorCode());
@@ -187,6 +196,7 @@ class OrderUseCaseTest {
         Long restaurantId = 1L;
         Long dishRestaurantId = 2L;
         Long dishId = 5L;
+        String email = "andresaya@gmail.com";
 
         OrderItem item = new OrderItem(dishId, 1);
         Order order = new Order(null, restaurantId, List.of(item));
@@ -207,7 +217,7 @@ class OrderUseCaseTest {
 
         DomainException exception = assertThrows(
                 DomainException.class,
-                () -> orderUseCase.saveOrder(order, userId)
+                () -> orderUseCase.saveOrder(order, userId, email)
         );
 
         assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
@@ -567,6 +577,7 @@ class OrderUseCaseTest {
     void shouldThrowExceptionWhenClientAlreadyHasAnActiveOrder() {
         Long userId = 1L;
         Long restaurantId = 10L;
+        String email = "andresaya@gmail.com";
 
         Order order = new Order(20L, 100L, List.of());
 
@@ -586,7 +597,7 @@ class OrderUseCaseTest {
 
         DomainException exception = assertThrows(
                 DomainException.class,
-                () -> orderUseCase.saveOrder(order, userId)
+                () -> orderUseCase.saveOrder(order, userId, email)
         );
 
         assertEquals(ErrorCode.ORDER_ALREADY_EXISTS, exception.getErrorCode());

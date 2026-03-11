@@ -91,7 +91,7 @@ public class OrderUseCase implements IOrderServicePort {
         trazabilidad.setDate(LocalDateTime.now());
         trazabilidad.setPreviousStatus(DomainConstants.CREATED);
         trazabilidad.setNewStatus(String.valueOf(order1.getStatus()));
-        trazabilidad.setEmployeeId(order1.getChefId());
+        trazabilidad.setEmployeeId(null);
         trazabilidad.setEmployeeEmail(null);
         trazabilidadPersistencePort.saveLog(trazabilidad);
         return order1;
