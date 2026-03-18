@@ -1011,4 +1011,46 @@ class OrderUseCaseTest {
         }
     }
 
+    @Test
+    void shouldReturnOrdersWhenRestaurantExists() {
+        // Arrange
+        Long restaurantId = 1L;
+        List<Long> expectedOrders = List.of(10L, 20L, 30L);
+
+        when(restaurantPersistencePort.findById(restaurantId))
+                .thenReturn(Optional.of(new Restaurant()));
+
+        when(orderPersistencePort.getOrdersByRestaurantId(restaurantId))
+                .thenReturn(expectedOrders);
+
+        // Act
+        List<Long> result = orderUseCase.getOrdersByRestaurantId(restaurantId);
+
+        // Assert
+        assertEquals(expectedOrders, result);
+
+        verify(restaurantPersistencePort).findById(restaurantId);
+        verify(orderPersistencePort).getOrdersByRestaurantId(restaurantId);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenRestaurantDoesNotExist() {
+        // Arrange
+        Long restaurantId = 1L;
+
+        when(restaurantPersistencePort.findById(restaurantId))
+                .thenReturn(Optional.empty());
+
+        // Act & Assert
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> orderUseCase.getOrdersByRestaurantId(restaurantId)
+        );
+
+        assertEquals(ErrorCode.DATA_NOT_FOUND, exception.getErrorCode());
+
+        verify(restaurantPersistencePort).findById(restaurantId);
+        verify(orderPersistencePort, never()).getOrdersByRestaurantId(any());
+    }
+
 }

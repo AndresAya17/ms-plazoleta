@@ -8,6 +8,7 @@ import com.pragma.plazoleta.application.dto.response.PageResponseDto;
 import com.pragma.plazoleta.application.dto.response.RestaurantListResponseDto;
 import com.pragma.plazoleta.application.handler.IRestaurantHandler;
 import com.pragma.plazoleta.domain.spi.IJwtPersistencePort;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -23,6 +24,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
@@ -181,6 +183,33 @@ class RestaurantRestControllerTest {
 
         verify(restaurantHandler)
                 .assignEmployeeToRestaurant(any(CreateEmployeeRestaurantRequestDto.class));
+        verifyNoMoreInteractions(restaurantHandler);
+    }
+
+    @Test
+    @DisplayName("Debe retornar la lista de empleados para un restaurante sin requerir autenticación")
+    void shouldGetEmployeesToAssignRestaurant() throws Exception {
+        // GIVEN
+        Long restaurantId = 1L;
+        Long userId = 2L;
+        List<Long> employeeIds = List.of(10L, 11L, 12L);
+
+        // Configuramos el mock para que devuelva la lista cuando se llame con estos IDs
+        when(restaurantHandler.getEmployeeRestaurant(restaurantId, userId))
+                .thenReturn(employeeIds);
+
+        // WHEN
+        mockMvc.perform(
+                        get(BASE_URL + "/" + restaurantId + "/employees")
+                                .param("userId", userId.toString()) // Se envía como Query Param
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                // THEN
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
+
+        // Verificamos que se llamó al handler con los parámetros correctos
+        verify(restaurantHandler).getEmployeeRestaurant(restaurantId, userId);
         verifyNoMoreInteractions(restaurantHandler);
     }
 }
