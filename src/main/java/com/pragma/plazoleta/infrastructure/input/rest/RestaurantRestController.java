@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/v1/plazoleta/restaurant")
@@ -140,6 +142,13 @@ public class RestaurantRestController {
     ) {
         restaurantHandler.assignEmployeeToRestaurant(employeeRestaurantRequestDto);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{restaurantId}/employees")
+    public ResponseEntity<List<Long>> getEmployeesToAssignRestaurant(
+            @PathVariable Long restaurantId,
+            @RequestParam Long userId) {
+        return ResponseEntity.ok(restaurantHandler.getEmployeeRestaurant(restaurantId, userId));
     }
 
 

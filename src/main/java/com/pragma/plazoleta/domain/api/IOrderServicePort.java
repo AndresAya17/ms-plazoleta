@@ -3,6 +3,8 @@ package com.pragma.plazoleta.domain.api;
 import com.pragma.plazoleta.domain.model.Order;
 import com.pragma.plazoleta.domain.model.PageResult;
 
+import java.util.List;
+
 public interface IOrderServicePort {
     Order saveOrder(Order order, Long userId, String email);
     PageResult<Order> listOrderByStatus(Long userId, String status, int page, int size);
@@ -10,4 +12,5 @@ public interface IOrderServicePort {
     Order updateStatusReady(Long userId, Long orderId);
     void updateStatusDelivery(String code, Long userId, Long orderId);
     void updateStatusCanceled(Long userId, Long orderId);
+    List<Long> getOrdersByRestaurantId(Long restaurantId);
 }

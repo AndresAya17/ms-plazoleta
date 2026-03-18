@@ -10,6 +10,8 @@ import com.pragma.plazoleta.domain.model.Restaurant;
 import com.pragma.plazoleta.domain.spi.IEmployeeRestaurantPersistencePort;
 import com.pragma.plazoleta.domain.spi.IRestaurantPersistencePort;
 
+import java.util.List;
+
 public class RestaurantUseCase implements IRestaurantServicePort {
 
     private final IRestaurantPersistencePort restaurantPersistencePort;
@@ -44,5 +46,17 @@ public class RestaurantUseCase implements IRestaurantServicePort {
     @Override
     public void assignEmployeeToRestaurant(EmployeeRestaurant employeeRestaurant) {
         employeeRestaurantPersistencePort.save(employeeRestaurant);
+    }
+
+    @Override
+    public List<Long> getEmployeeRestaurant(Long restaurantId, Long userId) {
+        Restaurant restaurant = restaurantPersistencePort.findById(
+                restaurantId).orElseThrow(() ->
+                new DomainException(ErrorCode.DATA_NOT_FOUND, DomainConstants.RNF));
+
+        if(!restaurant.getOwnerId().equals(userId)){
+            throw new DomainException(ErrorCode.UNAUTHORIZED, DomainConstants.UNO);
+        }
+        return employeeRestaurantPersistencePort.findEmployeeByRestaurantId(restaurantId);
     }
 }
