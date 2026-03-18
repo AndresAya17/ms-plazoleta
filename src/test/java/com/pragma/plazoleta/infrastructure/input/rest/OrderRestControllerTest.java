@@ -10,7 +10,6 @@ import com.pragma.plazoleta.application.handler.IOrderHandler;
 import com.pragma.plazoleta.domain.model.OrderStatus;
 import com.pragma.plazoleta.domain.spi.IJwtPersistencePort;
 import com.pragma.plazoleta.infrastructure.input.security.SecurityConfig;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

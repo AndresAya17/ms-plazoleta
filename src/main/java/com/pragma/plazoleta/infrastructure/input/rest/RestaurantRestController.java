@@ -144,6 +144,15 @@ public class RestaurantRestController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Listar empleados asignados a un restaurante",
+            description = "Devuelve una lista con los IDs de todos los empleados que están vinculados actualmente al restaurante proporcionado."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de IDs de empleados obtenida con éxito"),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado - El usuario no tiene permisos suficientes"),
+            @ApiResponse(responseCode = "404", description = "Restaurante no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @GetMapping("/{restaurantId}/employees")
     public ResponseEntity<List<Long>> getEmployeesToAssignRestaurant(
             @PathVariable Long restaurantId,
