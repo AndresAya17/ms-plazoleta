@@ -20,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/plazoleta/order")
 @RequiredArgsConstructor
@@ -205,5 +207,19 @@ public class OrderRestController {
 
         orderHandler.updateStatusOrderCanceled(userId, orderId);
         return ResponseEntity.ok().build();
+    }
+    @Operation(summary = "Obtener IDs de órdenes por restaurante",
+            description = "Permite obtener una lista de todos los identificadores de órdenes asociados a un restaurante específico mediante su ID."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de IDs de órdenes obtenida correctamente"),
+            @ApiResponse(responseCode = "403", description = "El usuario no tiene permisos para realizar esta acción"),
+            @ApiResponse(responseCode = "404", description = "Restaurante no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @GetMapping("/restaurant/{restaurantId}/orders")
+    public ResponseEntity<List<Long>> getOrderIdsByRestaurantId(
+            @PathVariable Long restaurantId){
+        return ResponseEntity.ok(orderHandler.getOrdersByRestaurantId(restaurantId));
     }
 }

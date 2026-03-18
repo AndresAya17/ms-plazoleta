@@ -10,6 +10,7 @@ import com.pragma.plazoleta.application.handler.IOrderHandler;
 import com.pragma.plazoleta.domain.model.OrderStatus;
 import com.pragma.plazoleta.domain.spi.IJwtPersistencePort;
 import com.pragma.plazoleta.infrastructure.input.security.SecurityConfig;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,6 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -234,6 +236,28 @@ class OrderRestControllerTest {
                 .updateStatusOrderCanceled(userId, orderId);
 
         verifyNoMoreInteractions(orderHandler);
+    }
+    @Test
+    @DisplayName("Debe retornar lista de IDs de órdenes y estatus 200 OK")
+    void shouldGetOrderIdsByRestaurantId() throws Exception {
+        // GIVEN
+        Long restaurantId = 1L;
+        List<Long> orderIds = List.of(101L, 102L);
+
+        when(orderHandler.getOrdersByRestaurantId(restaurantId))
+                .thenReturn(orderIds);
+
+        // WHEN
+        // Si tu path final es "/api/v1/order/restaurant/1/orders"
+        mockMvc.perform(
+                        get(BASE_URL + "/restaurant/" + restaurantId + "/orders")
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                // THEN
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
+
+        verify(orderHandler).getOrdersByRestaurantId(restaurantId);
     }
 
 }

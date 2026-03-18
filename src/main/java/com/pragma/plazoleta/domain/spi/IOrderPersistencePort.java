@@ -12,4 +12,5 @@ public interface IOrderPersistencePort {
     PageResult<Order> findByRestaurantIdAndStatus(Long restaurantId, OrderStatus orderStatus, int page, int size);
     Optional<Order> findById(Long orderId);
     boolean existsByClientIdAndStatusNotIn(Long clientId, List<OrderStatus> excludedStatuses);
+    List<Long> getOrdersByRestaurantId(Long restaurantId);
 }

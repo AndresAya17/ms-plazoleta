@@ -28,7 +28,9 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/api/v1/plazoleta/restaurant/*/validate-owner",
-                                "/api/v1/plazoleta/restaurant/employeeRestaurant/**"
+                                "/api/v1/plazoleta/restaurant/*/employees",
+                                "/api/v1/plazoleta/restaurant/employeeRestaurant/**",
+                                "/api/v1/plazoleta/order/restaurant/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

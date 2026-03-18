@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -57,6 +59,11 @@ public class RestaurantHandler implements IRestaurantHandler {
     public void assignEmployeeToRestaurant(CreateEmployeeRestaurantRequestDto employeeRestaurantRequestDto) {
         EmployeeRestaurant employeeRestaurant = employeeRestaurantMapper.toEmployee(employeeRestaurantRequestDto);
         restaurantServicePort.assignEmployeeToRestaurant(employeeRestaurant);
+    }
+
+    @Override
+    public List<Long> getEmployeeRestaurant(Long restaurantId, Long userId) {
+        return restaurantServicePort.getEmployeeRestaurant(restaurantId, userId);
     }
 
 

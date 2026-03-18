@@ -345,4 +345,14 @@ public class OrderUseCase implements IOrderServicePort {
         }
 
     }
+
+    @Override
+    public List<Long> getOrdersByRestaurantId(Long restaurantId) {
+        restaurantPersistencePort.
+                findById(restaurantId).orElseThrow(
+                        () -> new DomainException(ErrorCode.DATA_NOT_FOUND, DomainConstants.RNF)
+                );
+
+        return orderPersistencePort.getOrdersByRestaurantId(restaurantId);
+    }
 }

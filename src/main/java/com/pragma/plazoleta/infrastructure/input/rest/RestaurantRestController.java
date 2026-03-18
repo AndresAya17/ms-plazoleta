@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/v1/plazoleta/restaurant")
@@ -140,6 +142,22 @@ public class RestaurantRestController {
     ) {
         restaurantHandler.assignEmployeeToRestaurant(employeeRestaurantRequestDto);
         return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Listar empleados asignados a un restaurante",
+            description = "Devuelve una lista con los IDs de todos los empleados que están vinculados actualmente al restaurante proporcionado."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de IDs de empleados obtenida con éxito"),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado - El usuario no tiene permisos suficientes"),
+            @ApiResponse(responseCode = "404", description = "Restaurante no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @GetMapping("/{restaurantId}/employees")
+    public ResponseEntity<List<Long>> getEmployeesToAssignRestaurant(
+            @PathVariable Long restaurantId,
+            @RequestParam Long userId) {
+        return ResponseEntity.ok(restaurantHandler.getEmployeeRestaurant(restaurantId, userId));
     }
 
 

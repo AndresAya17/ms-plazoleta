@@ -67,4 +67,9 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
     public boolean existsByClientIdAndStatusNotIn(Long clientId, List<OrderStatus> excludedStatuses) {
         return orderRepository.existsByClientIdAndStatusNotIn(clientId, excludedStatuses);
     }
+
+    @Override
+    public List<Long> getOrdersByRestaurantId(Long restaurantId) {
+        return orderRepository.findOrderIdsByRestaurantId(restaurantId);
+    }
 }

@@ -14,4 +14,5 @@ public interface IRestaurantHandler {
     PageResponseDto<DishResponseDto> listDish(int page, int size, Long restaurantId, Long categoryId);
     void validateOwner(Long restaurantId, Long userId);
     void assignEmployeeToRestaurant(CreateEmployeeRestaurantRequestDto employeeRestaurantRequestDto);
+    List<Long> getEmployeeRestaurant(Long restaurantId, Long userId);
 }
